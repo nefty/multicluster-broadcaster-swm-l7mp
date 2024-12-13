@@ -11,9 +11,19 @@ defmodule K8sBroadcasterWeb.Endpoint do
     same_site: "Lax"
   ]
 
+  socket "/socket", K8sBroadcasterWeb.UserSocket,
+    websocket: true,
+    longpoll: false
+
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
+
+  plug Corsica,
+    origins: "*",
+    allow_headers: :all,
+    allow_methods: :all,
+    expose_headers: K8sBroadcasterWeb.Router.cors_expose_headers()
 
   # Serve at "/" the static files from "priv/static" directory.
   #

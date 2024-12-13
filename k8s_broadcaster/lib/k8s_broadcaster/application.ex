@@ -5,17 +5,39 @@ defmodule K8sBroadcaster.Application do
 
   use Application
 
+  @version Mix.Project.config()[:version]
+
+  @spec version() :: String.t()
+  def version(), do: @version
+
+  @spec cluster(:c0 | :c1 | :c2 | :c3) :: map()
+  def cluster(name),
+    do: Application.fetch_env!(:k8s_broadcaster, :cluster_info) |> Map.fetch!(name)
+
   @impl true
   def start(_type, _args) do
-    children = [
-      K8sBroadcasterWeb.Telemetry,
-      {DNSCluster, query: Application.get_env(:k8s_broadcaster, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: K8sBroadcaster.PubSub},
-      # Start a worker by calling: K8sBroadcaster.Worker.start_link(arg)
-      # {K8sBroadcaster.Worker, arg},
-      # Start to serve requests, typically the last entry
-      K8sBroadcasterWeb.Endpoint
-    ]
+    dist_config =
+      case Application.fetch_env!(:k8s_broadcaster, :dist_config) do
+        nil ->
+          nil
+
+        config ->
+          {Cluster.Supervisor, [[cluster: config], [name: K8sBroadcaster.ClusterSupervisor]]}
+      end
+
+    children =
+      [
+        K8sBroadcasterWeb.Telemetry,
+        {DNSCluster, query: Application.get_env(:k8s_broadcaster, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: K8sBroadcaster.PubSub},
+        # Start to serve requests, typically the last entry
+        dist_config,
+        K8sBroadcaster.PeerSupervisor,
+        K8sBroadcaster.Forwarder,
+        K8sBroadcasterWeb.Endpoint,
+        K8sBroadcasterWeb.Presence
+      ]
+      |> Enum.reject(&is_nil(&1))
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

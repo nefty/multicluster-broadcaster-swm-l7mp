@@ -1,5 +1,88 @@
 import Config
 
+read_cluster! = fn env ->
+  case System.get_env(env) do
+    nil ->
+      %{reg: nil, url: nil}
+
+    cluster ->
+      [reg, url] = String.split(cluster, ";")
+      %{reg: reg, url: url}
+  end
+end
+
+read_ice_port_range! = fn ->
+  case System.get_env("ICE_PORT_RANGE") do
+    nil ->
+      [0]
+
+    raw_port_range ->
+      case String.split(raw_port_range, "-", parts: 2) do
+        [from, to] -> String.to_integer(from)..String.to_integer(to)
+        _other -> raise "ICE_PORT_RANGE has to be in form of FROM-TO, passed: #{raw_port_range}"
+      end
+  end
+end
+
+read_k8s_dist_config! = fn ->
+  case System.get_env("K8S_SERVICE_NAME") do
+    nil ->
+      raise "Distribution mode `k8s` requires setting the env variable K8S_SERVICE_NAME"
+
+    service ->
+      [
+        strategy: Cluster.Strategy.Kubernetes.DNS,
+        config: [
+          application_name: "k8s_broadcaster",
+          service: service
+        ]
+      ]
+  end
+end
+
+ice_server_config =
+  %{
+    urls: System.get_env("ICE_SERVER_URL") || "stun:stun.l.google.com:19302",
+    username: System.get_env("ICE_SERVER_USERNAME"),
+    credential: System.get_env("ICE_SERVER_CREDENTIAL")
+  }
+  |> Map.reject(fn {_k, v} -> is_nil(v) end)
+
+ice_transport_policy =
+  case System.get_env("ICE_TRANSPORT_POLICY") do
+    "relay" -> :relay
+    _other -> :all
+  end
+
+pc_config = [
+  ice_servers: [ice_server_config],
+  ice_transport_policy: ice_transport_policy,
+  ice_port_range: read_ice_port_range!.()
+]
+
+# Cluster info is in form of %{reg: reg, url: url}.
+# If not provided, %{reg: nil, url: nil} will be used
+# and interpreted as using current window location
+cluster_info =
+  %{
+    c0: read_cluster!.("C0"),
+    c1: read_cluster!.("C1"),
+    c2: read_cluster!.("C2"),
+    c3: read_cluster!.("C3")
+  }
+  |> IO.inspect()
+
+dist_config =
+  case System.get_env("DISTRIBUTION_MODE") do
+    "k8s" -> read_k8s_dist_config!.()
+    _else -> nil
+  end
+
+config :k8s_broadcaster,
+  cluster_info: cluster_info,
+  pc_config: pc_config,
+  dist_config: dist_config
+
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration
@@ -49,6 +132,19 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base
+
+  whip_token = System.get_env("WHIP_TOKEN") || raise "Environment variable WHIP_TOKEN is missing."
+
+  admin_username =
+    System.get_env("ADMIN_USERNAME") || raise "Environment variable ADMIN_USERNAME is missing."
+
+  admin_password =
+    System.get_env("ADMIN_PASSWORD") || raise "Environment variable ADMIN_PASSWORD is missing."
+
+  config :k8s_broadcaster,
+    whip_token: whip_token,
+    admin_username: admin_username,
+    admin_password: admin_password
 
   # ## SSL Support
   #

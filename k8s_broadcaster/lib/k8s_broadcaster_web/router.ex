@@ -1,6 +1,8 @@
 defmodule K8sBroadcasterWeb.Router do
   use K8sBroadcasterWeb, :router
 
+  import Phoenix.LiveDashboard.Router
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -10,8 +12,8 @@ defmodule K8sBroadcasterWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
+  pipeline :auth do
+    plug :admin_auth
   end
 
   scope "/", K8sBroadcasterWeb do
@@ -20,24 +22,36 @@ defmodule K8sBroadcasterWeb.Router do
     get "/", PageController, :home
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", K8sBroadcasterWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", K8sBroadcasterWeb do
+    get "/pc-config", MediaController, :pc_config
+    post "/whip", MediaController, :whip
+    post "/whep", MediaController, :whep
 
-  # Enable LiveDashboard in development
-  if Application.compile_env(:k8s_broadcaster, :dev_routes) do
-    # If you want to use the LiveDashboard in production, you should put
-    # it behind authentication and allow only admins to access it.
-    # If your application does not have an admins-only section yet,
-    # you can use Plug.BasicAuth to set up some basic authentication
-    # as long as you are also using SSL (which you should anyway).
-    import Phoenix.LiveDashboard.Router
-
-    scope "/dev" do
-      pipe_through :browser
-
-      live_dashboard "/dashboard", metrics: K8sBroadcasterWeb.Telemetry
+    scope "/resource/:resource_id" do
+      patch "/", MediaController, :ice_candidate
+      delete "/", MediaController, :remove_pc
+      get "/sse/event-stream", MediaController, :event_stream
+      post "/sse", MediaController, :sse
+      post "/layer", MediaController, :layer
     end
+  end
+
+  scope "/admin", K8sBroadcasterWeb do
+    pipe_through :auth
+    pipe_through :browser
+
+    get "/panel", PageController, :panel
+
+    live_dashboard "/dashboard",
+      metrics: K8sBroadcasterWeb.Telemetry,
+      additional_pages: [exwebrtc: ExWebRTCDashboard]
+  end
+
+  def cors_expose_headers, do: K8sBroadcasterWeb.MediaController.cors_expose_headers()
+
+  defp admin_auth(conn, _opts) do
+    username = Application.fetch_env!(:k8s_broadcaster, :admin_username)
+    password = Application.fetch_env!(:k8s_broadcaster, :admin_password)
+    Plug.BasicAuth.basic_auth(conn, username: username, password: password)
   end
 end

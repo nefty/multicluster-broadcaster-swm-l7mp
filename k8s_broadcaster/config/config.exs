@@ -51,6 +51,16 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :mime, :types, %{
+  "application/sdp" => ["sdp"],
+  "application/trickle-ice-sdpfrag" => ["trickle-ice-sdpfrag"]
+}
+
+config :k8s_broadcaster,
+  whip_token: "example",
+  admin_username: "admin",
+  admin_password: "admin"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

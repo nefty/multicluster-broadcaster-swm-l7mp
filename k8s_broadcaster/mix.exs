@@ -51,7 +51,14 @@ defmodule K8sBroadcaster.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+
+      # custom deps
+      {:ex_webrtc, "~> 0.7.0"},
+      {:ex_webrtc_dashboard, "~> 0.7.0"},
+      {:syn, "~> 3.3"},
+      {:corsica, "~> 2.1.3"},
+      {:libcluster, "~> 3.4"}
     ]
   end
 
