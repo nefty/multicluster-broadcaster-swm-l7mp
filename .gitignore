@@ -1,0 +1,51 @@
+# Local terraform directories
+.terraform/
+.terraform.lock.hcl
+
+# Ignore terraform state files and backup files
+*.tfstate
+*.tfstate.backup
+
+# Ignore crash log files created during failed terraform runs
+crash.log
+*.tfplan
+*.tfplan.binary
+
+# Ignore override files (useful for custom configurations not intended to be shared)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore variables files with sensitive information
+# Uncomment the next lines if you're storing secrets in these files
+# *.tfvars
+# *.auto.tfvars
+
+# Ignore any secret files
+terraform.tfvars
+terraform.tfvars.json
+
+# Ignore sensitive JSON configuration files
+*.tfvars.json
+
+# Ignore any .env files or other local environment configurations
+.env
+
+# Ignore IDE specific files and folders
+.vscode/
+.idea/
+
+# Ignore macOS specific files
+.DS_Store
+
+# Ignore log files
+*.log
+
+# Ignore kubernetes config files
+germany
+us-west
+singapore
+
+# Ignore cloudflare secret file
+manifests/cloudflare-secret.yaml
