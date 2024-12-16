@@ -46,6 +46,33 @@
         Received video stream
       </p>
       <div id="videoplayer-grid" class="w-full grid gap-2 p-2 auto-rows-fr grid-cols-1"></div>
+      <div class="flex flex-col gap-2">
+        <div>
+          <label for="video-quality">Video quality</label>
+          <select name="video-quality" id="video-quality">
+            <option value="h" selected>High</option>
+            <option value="m">Medium</option>
+            <option value="l">Low</option>
+          </select>
+        </div>
+        <div>
+          <label for="packet-loss-range">Packet loss (%): </label>
+          <output id="packet-loss-range-output" for="packet-loss-range">0</output>
+          <.input
+            id="packet-loss-range"
+            name="packet-loss"
+            type="range"
+            value="0"
+            min="0"
+            max="100"
+          />
+          <p></p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <label for="rtx-checkbox">RTX</label>
+          <.input id="rtx-checkbox" name="rtx" type="checkbox" checked />
+        </div>
+      </div>
     </div>
   </div>
 

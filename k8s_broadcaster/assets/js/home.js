@@ -2,13 +2,13 @@ import { Socket, Presence } from 'phoenix';
 
 import { WHEPClient } from './whep-client.js';
 
-const settingsToggler = document.getElementById('settings-toggler');
 const viewercount = document.getElementById('viewercount');
-const settings = document.getElementById('settings');
 const videoQuality = document.getElementById('video-quality');
-const videoPlayerWrapper = document.getElementById('videoplayer-wrapper');
+const rtxCheckbox = document.getElementById('rtx-checkbox');
 const videoPlayerGrid = document.getElementById('videoplayer-grid');
 const statusMessage = document.getElementById('status-message');
+const packetLossRange = document.getElementById('packet-loss-range');
+const packetLossRangeOutput = document.getElementById('packet-loss-range-output');
 
 const whepEndpointBase = `${window.location.origin}/api/whep`;
 const inputsData = new Map();
@@ -36,8 +36,10 @@ const button2 = document.getElementById('button-2');
 const button3 = document.getElementById('button-3');
 const buttonAuto = document.getElementById('button-auto');
 
+let channel;
+
 async function connectSignaling(socket) {
-  const channel = socket.channel('k8s_broadcaster:signaling');
+  channel = socket.channel('k8s_broadcaster:signaling');
 
   const presence = new Presence(channel);
   presence.onSync(() => (viewercount.innerText = presence.list().length));
@@ -118,6 +120,18 @@ async function connectInput() {
   };
 
   whepClient.onconnected = () => {
+    packetLossRange.onchange = () =>  { 
+      packetLossRangeOutput.value = packetLossRange.value;
+      channel.push('packet_loss', {resourceId: whepClient.resourceId, value: packetLossRange.value});  
+    }
+
+    rtxCheckbox.onchange = () => {
+      connectInput();
+    }
+
+    videoQuality.onchange = () => setDefaultLayer(videoQuality.value);
+
+
     whepClient.changeLayer(defaultLayer);
 
     if (whepClient.pc.connectionState === "connected") {
@@ -212,7 +226,7 @@ async function connectInput() {
         }
   };
 
-  whepClient.connect();
+  whepClient.connect(rtxCheckbox.checked);
 }
 
 async function removeInput() {
@@ -257,33 +271,6 @@ async function setDefaultLayer(layer) {
     for (const { whepClient: whepClient } of inputsData.values()) {
       whepClient.changeLayer(layer);
     }
-  }
-}
-
-function toggleBox(element, other) {
-  if (window.getComputedStyle(element).display === 'none') {
-    // For screen's width lower than 1024,
-    // eiter show video player or chat at the same time.
-    if (window.innerWidth < 1024) {
-      element.classList.add('flex');
-      element.classList.remove('hidden', 'lg:flex');
-      other.classList.add('hidden');
-      other.classList.remove('flex', 'lg:flex');
-      videoPlayerWrapper.classList.remove('block');
-      videoPlayerWrapper.classList.add('hidden', 'lg:block');
-    } else {
-      element.classList.add('lg:flex', 'hidden');
-      element.classList.remove('flex');
-      other.classList.add('hidden');
-      other.classList.remove('flex', 'lg:flex');
-      videoPlayerWrapper.classList.remove('hidden', 'lg:block');
-      videoPlayerWrapper.classList.add('block');
-    }
-  } else {
-    element.classList.add('hidden');
-    element.classList.remove('flex', 'lg:flex');
-    videoPlayerWrapper.classList.remove('hidden', 'lg:block');
-    videoPlayerWrapper.classList.add('block');
   }
 }
 
@@ -339,8 +326,6 @@ export const Home = {
     connectSignaling(socket);
 
     //videoQuality.onchange = () => setDefaultLayer(videoQuality.value);
-
-    settingsToggler.onclick = () => toggleBox(settings, chat);
 
     button1.onclick = () => {
       url = button1.value

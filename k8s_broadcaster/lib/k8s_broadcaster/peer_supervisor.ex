@@ -45,8 +45,9 @@ defmodule K8sBroadcaster.PeerSupervisor do
   @spec start_whip(String.t()) :: {:ok, pid(), String.t(), String.t()} | {:error, term()}
   def start_whip(offer_sdp), do: start_pc(offer_sdp, :recvonly)
 
-  @spec start_whep(String.t()) :: {:ok, pid(), String.t(), String.t()} | {:error, term()}
-  def start_whep(offer_sdp), do: start_pc(offer_sdp, :sendonly)
+  @spec start_whep(String.t(), boolean()) ::
+          {:ok, pid(), String.t(), String.t()} | {:error, term()}
+  def start_whep(offer_sdp, rtx \\ true), do: start_pc(offer_sdp, :sendonly, rtx)
 
   @spec fetch_pid(String.t()) :: {:ok, pid()} | {:error, :peer_not_found}
   def fetch_pid(id) do
@@ -66,10 +67,10 @@ defmodule K8sBroadcaster.PeerSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  defp start_pc(offer_sdp, direction) do
+  defp start_pc(offer_sdp, direction, rtx \\ true) do
     offer = %SessionDescription{type: :offer, sdp: offer_sdp}
     pc_id = generate_pc_id()
-    {:ok, pc} = spawn_peer_connection()
+    {:ok, pc} = spawn_peer_connection(rtx)
     :syn.register(K8sBroadcaster.GlobalPeerRegistry, pc_id, pc)
 
     Logger.info("Received offer for #{inspect(pc)}")
@@ -109,13 +110,21 @@ defmodule K8sBroadcaster.PeerSupervisor do
     :ok
   end
 
-  defp spawn_peer_connection() do
+  defp spawn_peer_connection(rtx) do
+    features =
+      if rtx do
+        ExWebRTC.PeerConnection.Configuration.default_features()
+      else
+        ExWebRTC.PeerConnection.Configuration.default_features() -- [:inbound_rtx, :outbound_rtx]
+      end
+
     pc_opts =
       (Application.fetch_env!(:k8s_broadcaster, :pc_config) ++
          [
            audio_codecs: @audio_codecs,
            video_codecs: @video_codecs,
-           controlling_process: self()
+           controlling_process: self(),
+           features: features
          ])
       |> Keyword.delete(:ice_transport_policy)
 

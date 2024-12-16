@@ -3,13 +3,14 @@ export class WHEPClient {
       this.url = url;
       this.id = 'WHEP Client';
       this.pc = undefined;
+      this.resourceId = undefined;
       this.patchEndpoint = undefined;
       this.onstream = undefined;
       this.onconnected = undefined;
       this.pcConfig = pcConfig;
     }
   
-    async connect() {
+    async connect(rtx = true) {
       const candidates = [];
       const pc = new RTCPeerConnection(this.pcConfig);
       this.pc = pc;
@@ -66,7 +67,10 @@ export class WHEPClient {
           Accept: 'application/sdp',
           'Content-Type': 'application/sdp',
         },
-        body: pc.localDescription.sdp,
+        body: JSON.stringify({ 
+          rtx: rtx,
+          sdp: pc.localDescription.sdp,
+        })
       });
   
       if (response.status !== 201) {
@@ -77,6 +81,7 @@ export class WHEPClient {
       }
   
       this.patchEndpoint = response.headers.get('location');
+      this.resourceId = this.patchEndpoint.split('/').pop();
       console.log(`[${this.id}]: Sucessfully initialized WHEP connection`);
   
       for (const candidate of candidates) {

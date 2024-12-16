@@ -33,4 +33,14 @@ defmodule K8sBroadcasterWeb.Channel do
 
     {:noreply, socket}
   end
+
+  @impl true
+  def handle_in("packet_loss", payload, socket) do
+    case K8sBroadcaster.PeerSupervisor.fetch_pid(payload["resourceId"]) do
+      {:ok, pid} -> K8sBroadcaster.Forwarder.set_packet_loss(pid, payload["value"])
+      _ -> :ok
+    end
+
+    {:noreply, socket}
+  end
 end

@@ -43,8 +43,9 @@ defmodule K8sBroadcasterWeb.MediaController do
   def whep(conn, params) do
     input_id = params["inputId"]
 
-    with {:ok, offer_sdp, conn} <- read_body(conn),
-         {:ok, pc, pc_id, answer_sdp} <- PeerSupervisor.start_whep(offer_sdp),
+    with {:ok, body, conn} <- read_body(conn),
+         {:ok, %{"sdp" => offer_sdp, "rtx" => rtx}} <- Jason.decode(body),
+         {:ok, pc, pc_id, answer_sdp} <- PeerSupervisor.start_whep(offer_sdp, rtx),
          :ok <- Forwarder.connect_output(pc, input_id) do
       uri = ~p"/api/resource/#{pc_id}"
 

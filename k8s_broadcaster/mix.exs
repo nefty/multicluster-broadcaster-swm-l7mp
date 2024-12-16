@@ -54,7 +54,8 @@ defmodule K8sBroadcaster.MixProject do
       {:bandit, "~> 1.5"},
 
       # custom deps
-      {:ex_webrtc, "~> 0.7.0"},
+      # {:ex_webrtc, "~> 0.7.0"},
+      {:ex_webrtc, github: "elixir-webrtc/ex_webrtc", branch: "packet-loss", override: true},
       {:ex_webrtc_dashboard, "~> 0.7.0"},
       {:syn, "~> 3.3"},
       {:corsica, "~> 2.1.3"},

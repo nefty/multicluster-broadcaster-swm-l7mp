@@ -33,6 +33,7 @@ defmodule K8sBroadcaster.Forwarder do
           video: String.t() | nil,
           audio: String.t() | nil,
           munger: Munger.t(),
+          packet_loss: non_neg_integer(),
           layer: String.t() | nil,
           pending_layer: String.t() | nil
         }
@@ -81,6 +82,11 @@ defmodule K8sBroadcaster.Forwarder do
   @spec get_local_input() :: input_spec() | nil
   def get_local_input() do
     GenServer.call(__MODULE__, :get_local_input)
+  end
+
+  @spec set_packet_loss(pid(), non_neg_integer()) :: :ok
+  def set_packet_loss(pc, value) do
+    GenServer.cast(__MODULE__, {:set_packet_loss, pc, value})
   end
 
   @impl true
@@ -186,6 +192,19 @@ defmodule K8sBroadcaster.Forwarder do
     Process.send_after(self(), {:connect_timeout, pc}, @connect_timeout_ms)
 
     {:reply, :ok, %{state | pending_outputs: pending_outputs}}
+  end
+
+  @impl true
+  def handle_cast({:set_packet_loss, pc, value}, state) do
+    case Map.get(state.outputs, pc) do
+      nil ->
+        Logger.warning("Tried to set packet loss for non-existing peer connection.")
+        {:noreply, state}
+
+      _output ->
+        PeerConnection.set_packet_loss(pc, String.to_integer(value))
+        {:noreply, state}
+    end
   end
 
   @impl true
