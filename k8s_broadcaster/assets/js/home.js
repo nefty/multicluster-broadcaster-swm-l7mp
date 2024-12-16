@@ -316,6 +316,13 @@ function toHHMMSS(milliseconds) {
       return hours + ":" + minutes + ":" + seconds;
     }
 
+function resetButtons() {
+  button1.classList.remove("border-green-500");
+  button2.classList.remove("border-green-500");
+  button3.classList.remove("border-green-500");
+  buttonAuto.classList.remove("border-green-500");
+}
+
 export const Home = {
   mounted() {
     const socket = new Socket('/socket', {
@@ -330,21 +337,29 @@ export const Home = {
     button1.onclick = () => {
       url = button1.value
       console.log(url);
+      resetButtons();
+      button1.classList.toggle("border-green-500");
       connectInput();
     };
 
     button2.onclick = () => {
       url = button2.value
+      resetButtons();
+      button2.classList.toggle("border-green-500");
       connectInput();
     };
 
     button3.onclick = () => {
       url = button3.value
+      resetButtons();
+      button3.classList.toggle("border-green-500");
       connectInput();
     };
     
     buttonAuto.onclick = () => {
       url = buttonAuto.value
+      resetButtons();
+      buttonAuto.classList.toggle("border-green-500");
       connectInput();
     };
   },
