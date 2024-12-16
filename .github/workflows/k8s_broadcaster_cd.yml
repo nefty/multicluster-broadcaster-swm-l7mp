@@ -38,7 +38,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.APP_NAME }}
-          tags: type=match,pattern=${{ env.APP_NAME }}-v(.*),group=1
+          tags: type=match,pattern=v(.*),group=1
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
