@@ -1,0 +1,133 @@
+<div id="home" phx-hook="Home" class="flex flex-col gap-6">
+  <div class="flex flex-row gap-6">
+    <div id="cluster-wrapper" class="flex flex-1 flex-col p-2 gap-5">
+      <div id="cluster-view" class="flex flex-1 p-2 justify-center rounded-lg border-2">
+        <img src={~p"/images/cluster.svg"} />
+      </div>
+      <div id="cluster-buttons" class="flex flex-col gap-5">
+        <div class="flex flex-row gap-5">
+          <button
+            id="button-1"
+            value={K8sBroadcaster.Application.cluster(:c1).url || assigns[:current_url]}
+            class="flex-1 p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
+          >
+            Join {K8sBroadcaster.Application.cluster(:c1).reg || "LOC"}
+          </button>
+          <button
+            id="button-2"
+            value={K8sBroadcaster.Application.cluster(:c2).url || assigns[:current_url]}
+            class="flex-1 p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
+          >
+            Join {K8sBroadcaster.Application.cluster(:c2).reg || "LOC"}
+          </button>
+          <button
+            id="button-3"
+            value={K8sBroadcaster.Application.cluster(:c3).url || assigns[:current_url]}
+            class="flex-1 p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
+          >
+            Join {K8sBroadcaster.Application.cluster(:c3).reg || "LOC"}
+          </button>
+        </div>
+        <button
+          id="button-auto"
+          value={K8sBroadcaster.Application.cluster(:c0).url || assigns[:current_url]}
+          class="p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
+        >
+          Join geographically closest
+        </button>
+      </div>
+    </div>
+
+    <div id="videoplayer-wrapper" class="flex flex-1 flex-col gap-3 overflow-y-scroll">
+      <p id="status-message" class="text-brand/80 font-semibold hidden">
+        Waiting for the stream to begin...
+      </p>
+      <p class="px-2 text-lg">
+        Received video stream
+      </p>
+      <div id="videoplayer-grid" class="w-full grid gap-2 p-2 auto-rows-fr grid-cols-1"></div>
+      <div class="flex flex-col gap-2">
+        <div>
+          <label for="video-quality">Video quality</label>
+          <select name="video-quality" id="video-quality">
+            <option value="h" selected>High</option>
+            <option value="m">Medium</option>
+            <option value="l">Low</option>
+          </select>
+        </div>
+        <div>
+          <label for="packet-loss-range">Packet loss (%): </label>
+          <output id="packet-loss-range-output" for="packet-loss-range">0</output>
+          <.input
+            id="packet-loss-range"
+            name="packet-loss"
+            type="range"
+            value="0"
+            min="0"
+            max="100"
+          />
+          <p></p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <label for="rtx-checkbox">RTX</label>
+          <.input id="rtx-checkbox" name="rtx" type="checkbox" checked />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="videoplayer-stats" class="p-2 rounded-lg border-2">
+    <table id="stats">
+      <tbody>
+        <tr>
+          <td>time</td>
+          <td id="time">0</td>
+        </tr>
+        <tr>
+          <td>audioBitrate (kbps)</td>
+          <td id="audio-bitrate">0</td>
+        </tr>
+        <tr>
+          <td>videoBitrate (kbps)</td>
+          <td id="video-bitrate">0</td>
+        </tr>
+        <tr>
+          <td>frameWidth</td>
+          <td id="frame-width">0</td>
+        </tr>
+        <tr>
+          <td>frameHeight</td>
+          <td id="frame-height">0</td>
+        </tr>
+        <tr>
+          <td>framesPerSecond</td>
+          <td id="fps">0</td>
+        </tr>
+        <tr>
+          <td>keyframesDecoded</td>
+          <td id="keyframes-decoded">0</td>
+        </tr>
+        <tr>
+          <td>pliCount</td>
+          <td id="pli-count">0</td>
+        </tr>
+        <tr>
+          <td>packetLoss (%)</td>
+          <td id="packet-loss">0</td>
+        </tr>
+        <tr>
+          <td>avgJitterBufferDelay (ms) VALIDATE</td>
+          <td id="avg-jitter-buffer-delay">0</td>
+        </tr>
+        <tr>
+          <td>freezeCount</td>
+          <td id="freeze-count">0</td>
+        </tr>
+        <tr>
+          <td>freezeDuration (s)</td>
+          <td id="freeze-duration">0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

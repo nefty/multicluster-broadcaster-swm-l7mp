@@ -1,0 +1,25 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* This file is for your main application CSS */
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.details {
+  padding: 5px 0px;
+}
+
+summary {
+  color: #0d0d0d;
+  align-items: center;
+  padding-bottom: 5px;
+  justify-content: space-between;
+}
+
+.summary-content {
+  color: #606060;
+  padding: 5px 0px;
+}
