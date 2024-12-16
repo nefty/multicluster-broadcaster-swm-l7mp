@@ -40,6 +40,15 @@ read_k8s_dist_config! = fn ->
   end
 end
 
+read_check_origin = fn ->
+  case System.get_env("CHECK_ORIGIN") do
+    nil -> true
+    "true" -> true
+    "false" -> false
+    value -> String.split(value, ";")
+  end
+end
+
 ice_server_config =
   %{
     urls: System.get_env("ICE_SERVER_URL") || "stun:stun.l.google.com:19302",
@@ -131,7 +140,8 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base
+    secret_key_base: secret_key_base,
+    check_origin: read_check_origin.()
 
   whip_token = System.get_env("WHIP_TOKEN") || raise "Environment variable WHIP_TOKEN is missing."
 
