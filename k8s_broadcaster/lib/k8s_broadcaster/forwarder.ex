@@ -265,6 +265,7 @@ defmodule K8sBroadcaster.Forwarder do
             nil ->
               Logger.info("Terminating output #{inspect(pc)} because there is no input")
               PeerSupervisor.terminate_pc(pc)
+              state
 
             input ->
               do_connect_output(pc, input, state)
