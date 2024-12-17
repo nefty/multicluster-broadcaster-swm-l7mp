@@ -1,366 +1,308 @@
-import { Socket, Presence } from 'phoenix';
+import { Socket, Presence } from "phoenix";
 
-import { WHEPClient } from './whep-client.js';
+import { WHEPClient } from "./whep-client.js";
 
-const viewercount = document.getElementById('viewercount');
-const videoQuality = document.getElementById('video-quality');
-const rtxCheckbox = document.getElementById('rtx-checkbox');
-const videoPlayerGrid = document.getElementById('videoplayer-grid');
-const statusMessage = document.getElementById('status-message');
-const packetLossRange = document.getElementById('packet-loss-range');
-const packetLossRangeOutput = document.getElementById('packet-loss-range-output');
+async function connectSignaling(view) {
+  view.channel = view.socket.channel("k8s_broadcaster:signaling");
 
-const whepEndpointBase = `${window.location.origin}/api/whep`;
-const inputsData = new Map();
-const stats = {
-  time: document.getElementById('time'),
-  audioBitrate: document.getElementById('audio-bitrate'),
-  videoBitrate: document.getElementById('video-bitrate'),
-  frameWidth: document.getElementById('frame-width'),
-  frameHeight: document.getElementById('frame-height'),
-  fps: document.getElementById('fps'),
-  keyframesDecoded: document.getElementById('keyframes-decoded'),
-  pliCount: document.getElementById('pli-count'),
-  packetLoss: document.getElementById('packet-loss'),
-  avgJitterBufferDelay: document.getElementById('avg-jitter-buffer-delay'),
-  freezeCount: document.getElementById('freeze-count'),
-  freezeDuration: document.getElementById('freeze-duration')
-};
-
-let defaultLayer = 'h';
-let url;
-let inputId;
-
-const button1 = document.getElementById('button-1');
-const button2 = document.getElementById('button-2');
-const button3 = document.getElementById('button-3');
-const buttonAuto = document.getElementById('button-auto');
-
-let channel;
-
-async function connectSignaling(socket) {
-  channel = socket.channel('k8s_broadcaster:signaling');
-
-  const presence = new Presence(channel);
+  const presence = new Presence(view.channel);
   presence.onSync(() => (viewercount.innerText = presence.list().length));
 
-
-  channel.on('input_added', ({ id: id }) => {
-    console.log('New input:', id);
-    inputId = id;
-    connectInput();
+  view.channel.on("input_added", ({ id: id }) => {
+    console.log("New input:", id);
+    view.inputId = id;
+    connectInput(view);
   });
 
-  channel.on('input_removed', ({ id: id }) => {
-    console.log('Input removed:', id);
-    removeInput();
+  view.channel.on("input_removed", ({ id: id }) => {
+    console.log("Input removed:", id);
+    removeInput(view);
   });
 
-  channel
+  view.channel
     .join()
-    .receive('ok', () => {
-      console.log('Joined signaling channel successfully');
-      statusMessage.innerText = 'Connected. Waiting for the stream to begin...';
-      statusMessage.classList.remove('hidden');
+    .receive("ok", () => {
+      console.log("Joined signaling channel successfully");
+      view.statusMessage.innerText =
+        "Connected. Waiting for the stream to begin...";
+      view.statusMessage.classList.remove("hidden");
     })
-    .receive('error', (resp) => {
-      console.error('Unable to join signaling channel', resp);
-      statusMessage.innerText = 'Unable to join the stream, try again in a few minutes';
-      statusMessage.classList.remove('hidden');
+    .receive("error", (resp) => {
+      console.error("Unable to join signaling channel", resp);
+      view.statusMessage.innerText =
+        "Unable to join the stream, try again in a few minutes";
+      view.statusMessage.classList.remove("hidden");
     });
 }
 
-async function connectInput() {
-
+async function connectInput(view) {
   let whepEndpoint;
-  if (url) {
-     whepEndpoint = url + 'api/whep?inputId=' + inputId;
+  if (view.url) {
+    whepEndpoint = view.url + "api/whep?inputId=" + view.inputId;
   } else {
-     whepEndpoint = whepEndpointBase + '?inputId=' + inputId;
-  } 
+    whepEndpoint = view.whepEndpointBase + "?inputId=" + view.inputId;
+  }
 
   console.log("Trying to connect to: ", whepEndpoint);
 
-  if (inputId) {
-    removeInput();
+  if (view.inputId) {
+    removeInput(view);
   }
 
-  const pcConfigUrl = (url || window.location.origin) + '/api/pc-config'
+  const pcConfigUrl = (view.url || window.location.origin) + "/api/pc-config";
   const response = await fetch(pcConfigUrl, {
-    method: 'GET',
-    cache: 'no-cache',
+    method: "GET",
+    cache: "no-cache",
   });
   const pcConfig = await response.json();
-  console.log('Fetched PC config from server: ', pcConfig)
+  console.log("Fetched PC config from server: ", pcConfig);
 
-  const whepClient = new WHEPClient(whepEndpoint, pcConfig);
+  view.whepClient = new WHEPClient(whepEndpoint, pcConfig);
+  view.whepClient.id = view.inputId;
 
-  const inputData = {
-    whepClient: whepClient,
-    videoPlayer: undefined,
-  };
-  inputsData.set(inputId, inputData);
-
-  whepClient.id = inputId;
-
-  whepClient.onstream = (stream) => {
-    console.log(`[${inputId}]: Creating new video element`);
-
-    const videoPlayer = document.createElement('video');
-    videoPlayer.srcObject = stream;
-    videoPlayer.autoplay = true;
-    videoPlayer.controls = true;
-    videoPlayer.muted = true;
-    videoPlayer.className = 'rounded-xl w-full h-full object-cover bg-black';
-
-    videoPlayerGrid.appendChild(videoPlayer);
-    inputData.videoPlayer = videoPlayer;
-    updateVideoGrid();
-    statusMessage.classList.add('hidden');
+  view.whepClient.onstream = (stream) => {
+    console.log(`[${view.inputId}]: Received new stream`);
+    view.videoPlayer.srcObject = stream;
+    view.statusMessage.classList.add("hidden");
   };
 
-  whepClient.onconnected = () => {
-    packetLossRange.onchange = () =>  { 
-      packetLossRangeOutput.value = packetLossRange.value;
-      channel.push('packet_loss', {resourceId: whepClient.resourceId, value: packetLossRange.value});  
-    }
+  view.whepClient.onconnected = () => {
+    view.packetLossRange.onchange = () => {
+      view.packetLossRangeOutput.value = view.packetLossRange.value;
+      channel.push("packet_loss", {
+        resourceId: view.whepClient.resourceId,
+        value: view.packetLossRange.value,
+      });
+    };
 
-    rtxCheckbox.onchange = () => {
+    view.rtxCheckbox.onchange = () => {
       connectInput();
-    }
+    };
 
-    videoQuality.onchange = () => setDefaultLayer(videoQuality.value);
+    view.videoQuality.onchange = () => setDefaultLayer(view.videoQuality.value);
 
+    view.whepClient.changeLayer(view.defaultLayer);
 
-    whepClient.changeLayer(defaultLayer);
-
-    if (whepClient.pc.connectionState === "connected") {
-          stats.startTime = new Date();
-          stats.intervalId = setInterval(async function () {
-            if (!whepClient.pc) {
-              clearInterval(stats.intervalId);
-              stats.intervalId = undefined;
-              return;
-            }
-
-            stats.time.innerText = toHHMMSS(new Date() - stats.startTime);
-
-            let bitrate;
-
-           (await whepClient.pc.getStats(null)).forEach((report) => {
-              if (report.type === "inbound-rtp" && report.kind === "video") {
-                if (!stats.lastVideoReport) {
-                  bitrate = (report.bytesReceived * 8) / 1000;
-                } else {
-                  const timeDiff =
-                    (report.timestamp - stats.lastVideoReport.timestamp) / 1000;
-                  if (timeDiff == 0) {
-                    // this should never happen as we are getting stats every second
-                    bitrate = 0;
-                  } else {
-                    bitrate =
-                      ((report.bytesReceived - stats.lastVideoReport.bytesReceived) *
-                        8) /
-                      timeDiff;
-                  }
-                }
-
-                stats.videoBitrate.innerText = (bitrate / 1000).toFixed();
-                stats.frameWidth.innerText = report.frameWidth;
-                stats.frameHeight.innerText = report.frameHeight;
-                stats.fps.innerText = report.framesPerSecond;
-                stats.keyframesDecoded.innerText = report.keyFramesDecoded;
-                stats.pliCount.innerText = report.pliCount;
-                stats.avgJitterBufferDelay.innerText = report.jitterBufferDelay * 1000 / report.jitterBufferEmittedCount;
-                stats.freezeCount.innerText = report.freezeCount;
-                stats.freezeDuration.innerText = report.totalFreezesDuration;
-                stats.lastVideoReport = report;
-              } else if (
-                report.type === "inbound-rtp" &&
-                report.kind === "audio"
-              ) {
-                if (!stats.lastAudioReport) {
-                  bitrate = report.bytesReceived;
-                } else {
-                  const timeDiff =
-                    (report.timestamp - stats.lastAudioReport.timestamp) / 1000;
-                  if (timeDiff == 0) {
-                    // this should never happen as we are getting stats every second
-                    bitrate = 0;
-                  } else {
-                    bitrate =
-                      ((report.bytesReceived - stats.lastAudioReport.bytesReceived) *
-                        8) /
-                      timeDiff;
-                  }
-                }
-
-                stats.audioBitrate.innerText = (bitrate / 1000).toFixed();
-                stats.lastAudioReport = report;
-              }
-            });
-
-            let packetsLost = 0;
-            let packetsReceived = 0;
-            // calculate packet loss
-            if (stats.lastAudioReport) {
-              packetsLost += stats.lastAudioReport.packetsLost;
-              packetsReceived += stats.lastAudioReport.packetsReceived;
-            }
-
-            if (stats.lastVideoReport) {
-              packetsLost += stats.lastVideoReport.packetsLost;
-              packetsReceived += stats.lastVideoReport.packetsReceived;
-
-            }
-
-            if (packetsReceived == 0) {
-              stats.packetLoss.innerText = 0;
-            } else {
-              stats.packetLoss.innerText = (packetsLost / packetsReceived * 100).toFixed(2);
-            }
-
-
-          }, 1000);
-        } else if (view.pc.connectionState === "failed") {
+    if (view.whepClient.pc.connectionState === "connected") {
+      view.stats.startTime = new Date();
+      view.stats.intervalId = setInterval(async function () {
+        if (!view.whepClient.pc) {
+          clearInterval(view.stats.intervalId);
+          view.stats.intervalId = undefined;
+          return;
         }
+
+        view.stats.time.innerText = toHHMMSS(new Date() - view.stats.startTime);
+
+        let bitrate;
+
+        (await view.whepClient.pc.getStats(null)).forEach((report) => {
+          if (report.type === "inbound-rtp" && report.kind === "video") {
+            if (!view.stats.lastVideoReport) {
+              bitrate = (report.bytesReceived * 8) / 1000;
+            } else {
+              const timeDiff =
+                (report.timestamp - view.stats.lastVideoReport.timestamp) /
+                1000;
+              if (timeDiff == 0) {
+                // this should never happen as we are getting stats every second
+                bitrate = 0;
+              } else {
+                bitrate =
+                  ((report.bytesReceived -
+                    view.stats.lastVideoReport.bytesReceived) *
+                    8) /
+                  timeDiff;
+              }
+            }
+
+            view.stats.videoBitrate.innerText = (bitrate / 1000).toFixed();
+            view.stats.frameWidth.innerText = report.frameWidth;
+            view.stats.frameHeight.innerText = report.frameHeight;
+            view.stats.fps.innerText = report.framesPerSecond;
+            view.stats.keyframesDecoded.innerText = report.keyFramesDecoded;
+            view.stats.pliCount.innerText = report.pliCount;
+            view.stats.avgJitterBufferDelay.innerText =
+              (report.jitterBufferDelay * 1000) /
+              report.jitterBufferEmittedCount;
+            view.stats.freezeCount.innerText = report.freezeCount;
+            view.stats.freezeDuration.innerText = report.totalFreezesDuration;
+            view.stats.lastVideoReport = report;
+          } else if (report.type === "inbound-rtp" && report.kind === "audio") {
+            if (!stats.lastAudioReport) {
+              bitrate = report.bytesReceived;
+            } else {
+              const timeDiff =
+                (report.timestamp - view.stats.lastAudioReport.timestamp) /
+                1000;
+              if (timeDiff == 0) {
+                // this should never happen as we are getting stats every second
+                bitrate = 0;
+              } else {
+                bitrate =
+                  ((report.bytesReceived -
+                    view.stats.lastAudioReport.bytesReceived) *
+                    8) /
+                  timeDiff;
+              }
+            }
+
+            view.stats.audioBitrate.innerText = (bitrate / 1000).toFixed();
+            view.stats.lastAudioReport = report;
+          }
+        });
+
+        let packetsLost = 0;
+        let packetsReceived = 0;
+        // calculate packet loss
+        if (view.stats.lastAudioReport) {
+          packetsLost += view.stats.lastAudioReport.packetsLost;
+          packetsReceived += view.stats.lastAudioReport.packetsReceived;
+        }
+
+        if (view.stats.lastVideoReport) {
+          packetsLost += view.stats.lastVideoReport.packetsLost;
+          packetsReceived += view.stats.lastVideoReport.packetsReceived;
+        }
+
+        if (packetsReceived == 0) {
+          view.stats.packetLoss.innerText = 0;
+        } else {
+          view.stats.packetLoss.innerText = (
+            (packetsLost / packetsReceived) *
+            100
+          ).toFixed(2);
+        }
+      }, 1000);
+    } else if (view.whepClient.pc.connectionState === "failed") {
+    }
   };
 
-  whepClient.connect(rtxCheckbox.checked);
+  view.whepClient.connect(view.rtxCheckbox.checked);
 }
 
-async function removeInput() {
-  const inputData = inputsData.get(inputId);
-  inputsData.delete(inputId);
-
-  if (inputData) {
-    inputData.whepClient.disconnect();
-
-    if (inputData.videoPlayer) {
-      videoPlayerGrid.removeChild(inputData.videoPlayer);
-      updateVideoGrid();
-    }
+async function removeInput(view) {
+  if (view.whepClient) {
+    console.log("Disconnecting WHEP client.");
+    view.whepClient.disconnect();
+    view.whepClient = undefined;
+    view.videoPlayer.srcObject = null;
   }
 
-  if (inputsData.size === 0) {
-    statusMessage.innerText = 'Connected. Waiting for the stream to begin...';
-    statusMessage.classList.remove('hidden');
-  }
+  view.statusMessage.innerText =
+    "Connected. Waiting for the stream to begin...";
+  view.statusMessage.classList.remove("hidden");
 
-  clearInterval(stats.intervalId);
-  stats.lastAudioReport = null;
-  stats.lastVideoReport = null;
-                stats.time.innerText = 0; 
-                stats.audioBitrate.innerText = 0; 
-                stats.videoBitrate.innerText = 0; 
-                stats.frameWidth.innerText = 0;
-                stats.frameHeight.innerText = 0; 
-                stats.fps.innerText = 0;
-                stats.keyframesDecoded.innerText = 0;
-                stats.pliCount.innerText = 0;
-                stats.packetLoss.innerText = 0;
-                stats.avgJitterBufferDelay.innerText = 0;
-                stats.freezeCount.innerText = 0;
-                stats.freezeDuration.innerText = 0;
-  
+  clearInterval(view.stats.intervalId);
+  view.stats.lastAudioReport = null;
+  view.stats.lastVideoReport = null;
+  view.stats.time.innerText = 0;
+  view.stats.audioBitrate.innerText = 0;
+  view.stats.videoBitrate.innerText = 0;
+  view.stats.frameWidth.innerText = 0;
+  view.stats.frameHeight.innerText = 0;
+  view.stats.fps.innerText = 0;
+  view.stats.keyframesDecoded.innerText = 0;
+  view.stats.pliCount.innerText = 0;
+  view.stats.packetLoss.innerText = 0;
+  view.stats.avgJitterBufferDelay.innerText = 0;
+  view.stats.freezeCount.innerText = 0;
+  view.stats.freezeDuration.innerText = 0;
 }
 
-async function setDefaultLayer(layer) {
-  if (defaultLayer !== layer) {
-    defaultLayer = layer;
-    for (const { whepClient: whepClient } of inputsData.values()) {
-      whepClient.changeLayer(layer);
-    }
+async function setDefaultLayer(view, layer) {
+  if (view.defaultLayer !== layer) {
+    view.defaultLayer = layer;
+    view.whepClient.changeLayer(layer);
   }
-}
-
-function updateVideoGrid() {
-  const videoCount = videoPlayerGrid.children.length;
-
-  let columns;
-  if (videoCount <= 1) {
-    columns = 'grid-cols-1';
-  } else if (videoCount <= 4) {
-    columns = 'grid-cols-2';
-  } else if (videoCount <= 9) {
-    columns = 'grid-cols-3';
-  } else if (videoCount <= 16) {
-    columns = 'grid-cols-4';
-  } else {
-    columns = 'grid-cols-5';
-  }
-
-  videoPlayerGrid.classList.remove(
-    'grid-cols-1',
-    'grid-cols-2',
-    'grid-cols-3',
-    'grid-cols-4',
-    'grid-cols-5'
-  );
-  videoPlayerGrid.classList.add(columns);
 }
 
 function toHHMMSS(milliseconds) {
-      // Calculate hours
-      let hours = Math.floor(milliseconds / (1000 * 60 * 60));
-      // Calculate minutes, subtracting the hours part
-      let minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
-      // Calculate seconds, subtracting the hours and minutes parts
-      let seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+  // Calculate hours
+  let hours = Math.floor(milliseconds / (1000 * 60 * 60));
+  // Calculate minutes, subtracting the hours part
+  let minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+  // Calculate seconds, subtracting the hours and minutes parts
+  let seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
 
-      // Formatting each unit to always have at least two digits
-      hours = hours < 10 ? "0" + hours : hours;
-      minutes = minutes < 10 ? "0" + minutes : minutes;
-      seconds = seconds < 10 ? "0" + seconds : seconds;
+  // Formatting each unit to always have at least two digits
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
 
-      return hours + ":" + minutes + ":" + seconds;
-    }
+  return hours + ":" + minutes + ":" + seconds;
+}
 
-function resetButtons() {
-  button1.classList.remove("border-green-500");
-  button2.classList.remove("border-green-500");
-  button3.classList.remove("border-green-500");
-  buttonAuto.classList.remove("border-green-500");
+function resetButtons(view) {
+  view.button1.classList.remove("border-green-500");
+  view.button2.classList.remove("border-green-500");
+  view.button3.classList.remove("border-green-500");
+  view.buttonAuto.classList.remove("border-green-500");
+}
+
+function colorButton(button) {
+  button.classList.toggle("border-green-500");
+}
+
+function buttonOnClick(view, button) {
+  view.url = button.value;
+  resetButtons(view);
+  colorButton(button);
+  connectInput(view);
 }
 
 export const Home = {
   mounted() {
-    const socket = new Socket('/socket', {
+    // read html elements
+    const view = this;
+    view.viewercount = document.getElementById("viewercount");
+    view.videoQuality = document.getElementById("video-quality");
+    view.rtxCheckbox = document.getElementById("rtx-checkbox");
+    view.videoPlayer = document.getElementById("videoplayer");
+    view.statusMessage = document.getElementById("status-message");
+    view.packetLossRange = document.getElementById("packet-loss-range");
+    view.packetLossRangeOutput = document.getElementById(
+      "packet-loss-range-output"
+    );
+    view.button1 = document.getElementById("button-1");
+    view.button2 = document.getElementById("button-2");
+    view.button3 = document.getElementById("button-3");
+    view.buttonAuto = document.getElementById("button-auto");
+
+    view.stats = {
+      time: document.getElementById("time"),
+      audioBitrate: document.getElementById("audio-bitrate"),
+      videoBitrate: document.getElementById("video-bitrate"),
+      frameWidth: document.getElementById("frame-width"),
+      frameHeight: document.getElementById("frame-height"),
+      fps: document.getElementById("fps"),
+      keyframesDecoded: document.getElementById("keyframes-decoded"),
+      pliCount: document.getElementById("pli-count"),
+      packetLoss: document.getElementById("packet-loss"),
+      avgJitterBufferDelay: document.getElementById("avg-jitter-buffer-delay"),
+      freezeCount: document.getElementById("freeze-count"),
+      freezeDuration: document.getElementById("freeze-duration"),
+    };
+
+    // declare custom fields
+    view.whepEndpointBase = `${window.location.origin}/api/whep`;
+    view.defaultLayer = "h";
+    view.url = undefined;
+    view.inputId = undefined;
+    view.channel = undefined;
+    view.whepClient = undefined;
+
+    // connect to the signaling
+    view.socket = new Socket("/socket", {
       params: { token: window.userToken },
     });
-    socket.connect();
+    view.socket.connect();
 
-    connectSignaling(socket);
+    connectSignaling(view);
 
-    //videoQuality.onchange = () => setDefaultLayer(videoQuality.value);
-
-    button1.onclick = () => {
-      url = button1.value
-      console.log(url);
-      resetButtons();
-      button1.classList.toggle("border-green-500");
-      connectInput();
-    };
-
-    button2.onclick = () => {
-      url = button2.value
-      resetButtons();
-      button2.classList.toggle("border-green-500");
-      connectInput();
-    };
-
-    button3.onclick = () => {
-      url = button3.value
-      resetButtons();
-      button3.classList.toggle("border-green-500");
-      connectInput();
-    };
-    
-    buttonAuto.onclick = () => {
-      url = buttonAuto.value
-      resetButtons();
-      buttonAuto.classList.toggle("border-green-500");
-      connectInput();
-    };
+    view.button1.onclick = (ev) => buttonOnClick(view, ev.srcElement);
+    view.button2.onclick = (ev) => buttonOnClick(view, ev.srcElement);
+    view.button3.onclick = (ev) => buttonOnClick(view, ev.srcElement);
+    view.buttonAuto.onclick = (ev) => buttonOnClick(view, ev.srcElement);
   },
 };
