@@ -1,8 +1,11 @@
 <header class="px-4 sm:px-6 lg:px-7">
   <div class="flex flex-col lg:flex-row items-center justify-between border-b border-brand/15 py-3 text-sm">
     <div class="flex items-center gap-4">
-      <a href="/">
-        <img src={~p"/images/logo.svg"} width="225" />
+      <a href="https://elixir-webrtc.org">
+        <img src={~p"/images/elixir_webrtc_logo.svg"} width="225" />
+      </a>
+      <a href="https://github.com/l7mp/stunner">
+        <img src={~p"/images/stunner_logo.svg"} width="150" />
       </a>
     </div>
     <div class="flex">
@@ -11,22 +14,13 @@
           <p id="viewercount">0</p>
           <.icon name="hero-user-solid" />
         </div>
-        <div class="flex items-center gap-2">
-          <a
-            href="https://github.com/elixir-webrtc/ex_webrtc"
-            class="hover:text-brand"
-            target="_blank"
-          >
-            GitHub
-          </a>
-          <a
-            href="https://hexdocs.pm/ex_webrtc/readme.html"
-            class="rounded-lg bg-brand/10 px-2 py-1 hover:bg-brand/20"
-            target="_blank"
-          >
-            Docs
-          </a>
-        </div>
+        <a
+          href="https://github.com/l7mp/multicluster-broadcaster-swm-l7mp"
+          class="rounded-lg bg-brand/10 px-2 py-1 hover:bg-brand/20"
+          target="_blank"
+        >
+          GitHub
+        </a>
       </div>
     </div>
   </div>
@@ -37,6 +31,11 @@
     {@inner_content}
   </div>
 </main>
-<footer class="flex flex-row px-4 py-2 lg:justify-start justify-center font-semibold text-brand/80">
-  {K8sBroadcaster.Application.version()}
+<footer class="flex flex-row px-4 py-2 justify-center items-center font-semibold text-brand/80">
+  <a href="https://swmansion.com" target="_blank">
+    <img src={~p"/images/swm_logo.svg"} width="60px" class="p-2" />
+  </a>
+  <a href="https://l7mp.io" target="_blank">
+    <img src={~p"/images/l7mp_logo.svg"} width="60px" class="p-2"/>
+  </a>
 </footer>
