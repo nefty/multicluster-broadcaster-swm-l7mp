@@ -242,7 +242,7 @@ defmodule K8sBroadcaster.Forwarder do
         available_layers: video_track.rids
     }
 
-    state = %{state | local_input: input}
+    state = %{state | pending_input: nil, local_input: input}
 
     Logger.info("Input #{input.id} (#{inspect(pc)}) has successfully connected")
     Channel.input_added(input.id)
@@ -395,7 +395,7 @@ defmodule K8sBroadcaster.Forwarder do
     end
 
     Channel.input_removed(input.id)
-    PubSub.broadcast_from(@pubsub, self(), "inputs", {:input_removed, pid})
+    PubSub.broadcast_from(@pubsub, self(), "inputs", {:input_removed, input.id})
 
     {:noreply, %{state | local_input: nil}}
   end
@@ -518,7 +518,12 @@ defmodule K8sBroadcaster.Forwarder do
 
   defp terminate_pending_input(%{pending_input: %{pc: pc, id: id}} = state) when is_pid(pc) do
     Logger.info("Terminating pending local input: #{id}")
-    :ok = PeerSupervisor.terminate_pc(pc)
+
+    case PeerSupervisor.terminate_pc(pc) do
+      :ok -> :ok
+      {:error, :not_found} -> Logger.warning("Couldn't find pending input. Clearing anyway.")
+    end
+
     %{state | pending_input: nil}
   end
 
@@ -526,8 +531,13 @@ defmodule K8sBroadcaster.Forwarder do
 
   defp terminate_local_input(%{local_input: %{pc: pc, id: id}} = state) when is_pid(pc) do
     Logger.info("Terminating local input: #{id}")
-    :ok = PeerSupervisor.terminate_pc(pc)
-    PubSub.broadcast_from(@pubsub, self(), "inputs", {:input_removed, pc})
+
+    case PeerSupervisor.terminate_pc(pc) do
+      :ok -> :ok
+      {:error, :not_found} -> Logger.warning("Couldn't find local input. Clearing anyway.")
+    end
+
+    PubSub.broadcast_from(@pubsub, self(), "inputs", {:input_removed, id})
     %{state | local_input: nil}
   end
 
