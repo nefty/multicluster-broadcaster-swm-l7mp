@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: broadcaster
-          image: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster:0.0.2
+          image: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster:0.0.3
           ports:
             - name: http
               containerPort: 4000
