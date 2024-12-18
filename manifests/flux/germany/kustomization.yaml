@@ -18,3 +18,13 @@ patches:
   target:
     kind: StatefulSet
     name: broadcaster
+- patch: |-
+    - op: replace
+      path: /spec/tls/0/hosts/0
+      value: germany.broadcaster.stunner.cc
+    - op: replace
+      path: /spec/rules/0/host
+      value: germany.broadcaster.stunner.cc
+  target:
+    kind: Ingress
+    name: broadcaster-ingress
