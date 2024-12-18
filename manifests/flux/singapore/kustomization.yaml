@@ -4,11 +4,14 @@ resources:
 - ../base/statefulset.yaml
 - ../base/ingress.yaml
 
-nameSuffix: -singapore
+#nameSuffix: -singapore
 
 # Patch to modify environment variables
 patches:
 - patch: |-
+    - op: replace
+      path: /metadata/name
+      value: "broadcaster-singapore"
     - op: replace
       path: /spec/template/spec/containers/0/env/0/value
       value: "turn:singapore.broadcaster.stunner.cc:3478?transport=udp"
@@ -18,3 +21,15 @@ patches:
   target:
     kind: StatefulSet
     name: broadcaster
+    namespace: default
+- patch: |-
+    - op: replace
+      path: /spec/tls/0/hosts/0
+      value: singapore.broadcaster.stunner.cc
+    - op: replace
+      path: /spec/rules/0/host
+      value: singapore.broadcaster.stunner.cc
+  target:
+    kind: Ingress
+    name: broadcaster-ingress
+    namespace: default
