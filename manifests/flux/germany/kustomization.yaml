@@ -4,11 +4,14 @@ resources:
 - ../base/statefulset.yaml
 - ../base/ingress.yaml
 
-nameSuffix: -germany
+#nameSuffix: -germany
 
 # Patch to modify environment variables
 patches:
 - patch: |-
+    - op: replace
+      path: /metadata/name
+      value: "broadcaster-germany"
     - op: replace
       path: /spec/template/spec/containers/0/env/0/value
       value: "turn:germany.broadcaster.stunner.cc:3478?transport=udp"
