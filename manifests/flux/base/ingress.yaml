@@ -6,6 +6,7 @@ metadata:
     cert-manager.io/cluster-issuer: dns-challange
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   name: broadcaster-ingress
+  namespace: default
 spec:
   ingressClassName: nginx
   tls:

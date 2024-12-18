@@ -21,6 +21,7 @@ patches:
   target:
     kind: StatefulSet
     name: broadcaster
+    namespace: default
 - patch: |-
     - op: replace
       path: /spec/tls/0/hosts/0
@@ -31,3 +32,4 @@ patches:
   target:
     kind: Ingress
     name: broadcaster-ingress
+    namespace: default
