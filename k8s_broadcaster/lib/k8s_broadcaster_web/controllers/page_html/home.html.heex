@@ -80,8 +80,8 @@
     <table id="stats">
       <tbody>
         <tr>
-          <td>time</td>
-          <td id="time">0</td>
+          <td>duration</td>
+          <td id="duration">0</td>
         </tr>
         <tr>
           <td>audioBitrate (kbps)</td>
@@ -129,5 +129,16 @@
         </tr>
       </tbody>
     </table>
+  </div>
+  <div class="flex flex-row flex-wrap">
+    <div class="w-96"><canvas id="audio-chart"></canvas></div>
+    <div class="w-96"><canvas id="video-chart"></canvas></div>
+    <div class="w-96"><canvas id="fps-chart"></canvas></div>
+    <div class="w-96"><canvas id="keyframesDecoded-chart"></canvas></div>
+    <div class="w-96"><canvas id="pliCount-chart"></canvas></div>
+    <div class="w-96"><canvas id="packetLoss-chart"></canvas></div>
+    <div class="w-96"><canvas id="avgJitter-chart"></canvas></div>
+    <div class="w-96"><canvas id="freezeCount-chart"></canvas></div>
+    <div class="w-96"><canvas id="freezeDuration-chart"></canvas></div>
   </div>
 </div>
