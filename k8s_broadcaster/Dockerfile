@@ -24,7 +24,7 @@ ARG TARGETPLATFORM
 RUN echo "Building for $TARGETPLATFORM"
 
 # install build dependencies
-RUN apt-get update -y && apt-get install -y build-essential git pkg-config libssl-dev
+RUN apt-get update -y && apt-get install -y build-essential git pkg-config libssl-dev npm
 # ex_srtp doesn't include precompiled libsrtp2 for ARM64 linux
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then apt-get install -y libsrtp2-dev; fi
 RUN apt-get clean && rm -f /var/lib/apt/lists/*_*
@@ -54,7 +54,9 @@ COPY priv priv
 
 COPY lib lib
 
+# install npm dependencies
 COPY assets assets
+RUN npm install --prefix assets
 
 # compile assets
 RUN mix assets.deploy
