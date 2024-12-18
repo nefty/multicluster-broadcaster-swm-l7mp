@@ -119,6 +119,7 @@ async function removeInput(view) {
   view.stats.keyframesDecoded.innerText = 0;
   view.stats.pliCount.innerText = 0;
   view.stats.packetLoss.innerText = 0;
+  view.stats.nackCount.innerText = 0;
   view.stats.avgJitterBufferDelay.innerText = 0;
   view.stats.freezeCount.innerText = 0;
   view.stats.freezeDuration.innerText = 0;
@@ -141,7 +142,9 @@ async function readPCStats(view) {
   view.stats.duration.innerText = toHHMMSS(new Date() - view.stats.startTime);
 
   (await view.whepClient.pc.getStats(null)).forEach((report) => {
-    if (report.type === "inbound-rtp" && report.kind === "video") {
+    if (report.type === "candidate-pair" && report.nominated === true) {
+      processCandidatePairReport(view, report);
+    } else if (report.type === "inbound-rtp" && report.kind === "video") {
       processVideoReport(view, report);
     } else if (report.type === "inbound-rtp" && report.kind === "audio") {
       processAudioReport(view, report);
@@ -149,6 +152,35 @@ async function readPCStats(view) {
   });
 
   updatePacketLoss(view);
+}
+
+function processCandidatePairReport(view, report) {
+  const timestamp = toXLabel(new Date(report.timestamp));
+  view.stats.rtt.innerText = report.currentRoundTripTime * 1000;
+  view.stats.rttTS.push(timestamp, report.currentRoundTripTime * 1000);
+  view.rttChart.update();
+
+  let packetsReceived = 0;
+  if (view.stats.lastCandidatePairReport) {
+    const timeDiff =
+      (report.timestamp - view.stats.lastCandidatePairReport.timestamp) / 1000;
+    if (timeDiff == 0) {
+      packetsReceived = 0;
+    } else {
+      packetsReceived =
+        (report.packetsReceived -
+          view.stats.lastCandidatePairReport.packetsReceived) /
+        timeDiff;
+    }
+  }
+
+  packetsReceived = packetsReceived.toFixed();
+
+  view.stats.packetsReceived.innerText = packetsReceived;
+  view.stats.packetsReceivedTS.push(timestamp, packetsReceived);
+  view.packetsReceivedChart.update();
+
+  view.stats.lastCandidatePairReport = report;
 }
 
 function processVideoReport(view, report) {
@@ -184,6 +216,8 @@ function processVideoReport(view, report) {
   view.stats.avgJitterBufferDelay.innerText = jitter;
   view.stats.freezeCount.innerText = report.freezeCount;
   view.stats.freezeDuration.innerText = report.totalFreezesDuration;
+  // nacks seem to be present only for video?
+  view.stats.nackCount = report.nackCount;
   view.stats.lastVideoReport = report;
 
   // charts
@@ -194,6 +228,7 @@ function processVideoReport(view, report) {
   view.stats.avgJitterTS.push(timestamp, jitter);
   view.stats.freezeCountTS.push(timestamp, report.freezeCount);
   view.stats.freezeDurationTS.push(timestamp, report.totalFreezesDuration);
+  view.stats.nackCountTS.push(timestamp, report.nackCount);
   view.videoChart.update();
   view.fpsChart.update();
   view.keyframesDecodedChart.update();
@@ -201,6 +236,7 @@ function processVideoReport(view, report) {
   view.avgJitterChart.update();
   view.freezeCountChart.update();
   view.freezeDurationChart.update();
+  view.nackCountChart.update();
 }
 
 function processAudioReport(view, report) {
@@ -363,25 +399,31 @@ export const Home = {
 
     view.stats = {
       duration: document.getElementById("duration"),
+      rtt: document.getElementById("rtt"),
       audioBitrate: document.getElementById("audio-bitrate"),
       videoBitrate: document.getElementById("video-bitrate"),
+      packetsReceived: document.getElementById("packets-received"),
       frameWidth: document.getElementById("frame-width"),
       frameHeight: document.getElementById("frame-height"),
       fps: document.getElementById("fps"),
       keyframesDecoded: document.getElementById("keyframes-decoded"),
       pliCount: document.getElementById("pli-count"),
       packetLoss: document.getElementById("packet-loss"),
+      nackCount: document.getElementById("nack-count"),
       avgJitterBufferDelay: document.getElementById("avg-jitter-buffer-delay"),
       freezeCount: document.getElementById("freeze-count"),
       freezeDuration: document.getElementById("freeze-duration"),
 
       // time series
+      rttTS: new TimeSeries().populateLastMinute(),
       audioBitrateTS: new TimeSeries().populateLastMinute(),
       videoBitrateTS: new TimeSeries().populateLastMinute(),
+      packetsReceivedTS: new TimeSeries().populateLastMinute(),
       fpsTS: new TimeSeries().populateLastMinute(),
       keyframesDecodedTS: new TimeSeries().populateLastMinute(),
       pliCountTS: new TimeSeries().populateLastMinute(),
       packetLossTS: new TimeSeries().populateLastMinute(),
+      nackCountTS: new TimeSeries().populateLastMinute(),
       avgJitterTS: new TimeSeries().populateLastMinute(),
       freezeCountTS: new TimeSeries().populateLastMinute(),
       freezeDurationTS: new TimeSeries().populateLastMinute(),
@@ -408,6 +450,16 @@ export const Home = {
     view.button3.onclick = (ev) => buttonOnClick(view, ev.srcElement);
     view.buttonAuto.onclick = (ev) => buttonOnClick(view, ev.srcElement);
 
+    view.rttChart = createChart(
+      document.getElementById("rtt-chart"),
+      "rtt (ms)",
+      view.stats.rttTS
+    );
+    view.packetsReceivedChart = createChart(
+      document.getElementById("packetsReceived-chart"),
+      "packetsReceived/s",
+      view.stats.packetsReceivedTS
+    );
     view.audioChart = createChart(
       document.getElementById("audio-chart"),
       "audioBitrate (kbps)",
@@ -437,6 +489,11 @@ export const Home = {
       document.getElementById("packetLoss-chart"),
       "packetLoss (%)",
       view.stats.packetLossTS
+    );
+    view.nackCountChart = createChart(
+      document.getElementById("nackCount-chart"),
+      "nackCount",
+      view.stats.nackCountTS
     );
     view.avgJitterChart = createChart(
       document.getElementById("avgJitter-chart"),
