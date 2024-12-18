@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: broadcaster
+spec:
+  #replicas: 3
+  serviceName: broadcaster-headless
+  selector:
+    matchLabels:
+      app: broadcaster
+  template:
+    metadata:
+      labels:
+        app: broadcaster
+    spec:
+      containers:
+        - name: broadcaster
+          image: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster:0.0.2
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          env:
+            - name: ICE_SERVER_URL
+              value: turn:myregion.broadcaster.stunner.cc:3478?transport=udp
+            - name: PHX_HOST
+              value: myregion.broadcaster.stunner.cc
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DISTRIBUTION_MODE
+              value: k8s
+            - name: K8S_SERVICE_NAME
+              value: broadcaster-headless
+            - name: ICE_SERVER_USERNAME
+              value: user-1
+            - name: ICE_SERVER_CREDENTIAL
+              value: pass-1
+            - name: ICE_TRANSPORT_POLICY
+              value: relay
+            - name: ICE_PORT_RANGE
+              value: 51000-52000
+            - name: SECRET_KEY_BASE
+              value: u1gYGbDNgA5RwdKGFe9CdK+5qLCVROAHZAFPgUVlcmjTEGdvpXqgYW9qFjLQvxZO
+            - name: ADMIN_USERNAME
+              value: admin
+            - name: ADMIN_PASSWORD
+              value: admin
+            - name: WHIP_TOKEN
+              value: token
+            - name: C0
+              value: "GLOBAL;https://global.broadcaster.stunner.cc/"
+            - name: C1
+              value: "USWEST;https://us-west.broadcaster.stunner.cc/"
+            - name: C2
+              value: "GER;https://germany.broadcaster.stunner.cc/"
+            - name: C3
+              value: "SIN;https://singapore.broadcaster.stunner.cc/"
+            - name: CHECK_ORIGIN
+              value: "false"

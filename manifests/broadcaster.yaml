@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: broadcaster
-          image: ghcr.io/elixir-webrtc/apps/broadcaster:0.8.1-stunner-demo-v0.0.3
+          image: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster:0.0.1
           ports:
             - name: http
               containerPort: 4000
@@ -57,6 +57,8 @@ spec:
               value: "GER;https://germany.broadcaster.stunner.cc/"
             - name: C3
               value: "SIN;https://singapore.broadcaster.stunner.cc/"
+            - name: CHECK_ORIGIN
+              value: "false"
 ---
 apiVersion: v1
 kind: Service

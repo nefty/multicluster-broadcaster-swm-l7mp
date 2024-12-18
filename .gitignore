@@ -43,9 +43,9 @@ terraform.tfvars.json
 *.log
 
 # Ignore kubernetes config files
-germany
-us-west
-singapore
+./germany
+./us-west
+./singapore
 
 # Ignore cloudflare secret file
 manifests/cloudflare-secret.yaml
