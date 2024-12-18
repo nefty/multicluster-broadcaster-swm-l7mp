@@ -185,27 +185,41 @@ function processCandidatePairReport(view, report) {
 
 function processVideoReport(view, report) {
   const timestamp = toXLabel(new Date(report.timestamp));
-  let bitrate;
+  let bitrate = 0;
+  let avgJitterBufferDelay = 0;
 
   if (!view.stats.lastVideoReport) {
     bitrate = (report.bytesReceived * 8) / 1000;
+
+    if (report.jitterBufferEmittedCount != 0) {
+      avgJitterBufferDelay =
+        report.jitterBufferDelay / report.jitterBufferEmittedCount;
+    }
   } else {
     const timeDiff =
       (report.timestamp - view.stats.lastVideoReport.timestamp) / 1000;
-    if (timeDiff == 0) {
-      // this should never happen as we are getting stats every second
-      bitrate = 0;
-    } else {
+    if (timeDiff != 0) {
       bitrate =
         ((report.bytesReceived - view.stats.lastVideoReport.bytesReceived) *
           8) /
         timeDiff;
+
+      const jitterBufferDelay =
+        (report.jitterBufferDelay -
+          view.stats.lastVideoReport.jitterBufferDelay) *
+        1000;
+      const jitterBufferEmittedCount =
+        report.jitterBufferEmittedCount -
+        view.stats.lastVideoReport.jitterBufferEmittedCount;
+
+      if (jitterBufferEmittedCount != 0) {
+        avgJitterBufferDelay =
+          jitterBufferDelay / jitterBufferEmittedCount / timeDiff;
+      }
     }
   }
 
   const btr = (bitrate / 1000).toFixed();
-  const jitter =
-    (report.jitterBufferDelay * 1000) / report.jitterBufferEmittedCount;
 
   view.stats.videoBitrate.innerText = btr;
   view.stats.frameWidth.innerText = report.frameWidth;
@@ -213,11 +227,19 @@ function processVideoReport(view, report) {
   view.stats.fps.innerText = report.framesPerSecond || 0;
   view.stats.keyframesDecoded.innerText = report.keyFramesDecoded;
   view.stats.pliCount.innerText = report.pliCount;
-  view.stats.avgJitterBufferDelay.innerText = jitter;
+  view.stats.avgJitterBufferDelay.innerText = avgJitterBufferDelay;
   view.stats.freezeCount.innerText = report.freezeCount;
   view.stats.freezeDuration.innerText = report.totalFreezesDuration;
   // nacks seem to be present only for video?
   view.stats.nackCount = report.nackCount;
+
+  // update last and previous reports
+  if (view.stats.lastVideoReport) {
+    view.stats.prevVideoReport = view.stats.lastVideoReport;
+  } else {
+    view.stats.prevVideoReport = report;
+  }
+
   view.stats.lastVideoReport = report;
 
   // charts
@@ -225,7 +247,7 @@ function processVideoReport(view, report) {
   view.stats.fpsTS.push(timestamp, report.framesPerSecond || 0);
   view.stats.keyframesDecodedTS.push(timestamp, report.keyFramesDecoded);
   view.stats.pliCountTS.push(timestamp, report.pliCount);
-  view.stats.avgJitterTS.push(timestamp, jitter);
+  view.stats.avgJitterTS.push(timestamp, avgJitterBufferDelay);
   view.stats.freezeCountTS.push(timestamp, report.freezeCount);
   view.stats.freezeDurationTS.push(timestamp, report.totalFreezesDuration);
   view.stats.nackCountTS.push(timestamp, report.nackCount);
@@ -260,6 +282,13 @@ function processAudioReport(view, report) {
 
   const btr = (bitrate / 1000).toFixed();
   view.stats.audioBitrate.innerText = btr;
+
+  if (view.stats.lastAudioReport) {
+    view.stats.prevAudioReport = view.stats.lastAudioReport;
+  } else {
+    view.stats.prevAudioReport = report;
+  }
+
   view.stats.lastAudioReport = report;
 
   view.stats.audioBitrateTS.push(timestamp, btr);
@@ -267,24 +296,45 @@ function processAudioReport(view, report) {
 }
 
 function updatePacketLoss(view) {
+  let timeDiff = 0;
+
   let packetsLost = 0;
   let packetsReceived = 0;
   // calculate packet loss
-  if (view.stats.lastAudioReport) {
-    packetsLost += view.stats.lastAudioReport.packetsLost;
-    packetsReceived += view.stats.lastAudioReport.packetsReceived;
+  if (view.stats.lastAudioReport && view.stats.prevAudioReport) {
+    packetsLost +=
+      view.stats.lastAudioReport.packetsLost -
+      view.stats.prevAudioReport.packetsLost;
+    packetsReceived +=
+      view.stats.lastAudioReport.packetsReceived -
+      view.stats.prevAudioReport.packetsReceived;
+
+    timeDiff =
+      (view.stats.lastAudioReport.timestamp -
+        view.stats.prevAudioReport.timestamp) /
+      1000;
   }
 
-  if (view.stats.lastVideoReport) {
-    packetsLost += view.stats.lastVideoReport.packetsLost;
-    packetsReceived += view.stats.lastVideoReport.packetsReceived;
+  if (view.stats.lastVideoReport && view.stats.prevVideoReport) {
+    packetsLost +=
+      view.stats.lastVideoReport.packetsLost -
+      view.stats.prevVideoReport.packetsLost;
+    packetsReceived +=
+      view.stats.lastVideoReport.packetsReceived -
+      view.stats.prevVideoReport.packetsReceived;
+
+    timeDiff =
+      (view.stats.lastVideoReport.timestamp -
+        view.stats.prevVideoReport.timestamp) /
+      1000;
   }
 
   let packetLoss;
-  if (packetsReceived == 0) {
+  if (packetsReceived == 0 || timeDiff == 0) {
     packetLoss = 0;
   } else {
-    packetLoss = ((packetsLost / packetsReceived) * 100).toFixed(2);
+    packetLoss = ((packetsLost / packetsReceived) * 100) / timeDiff;
+    packetLoss = packetLoss.toFixed(2);
   }
 
   const timestamp = toXLabel(
