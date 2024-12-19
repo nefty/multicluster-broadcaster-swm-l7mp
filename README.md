@@ -29,7 +29,7 @@ In fact, in a production scenario managed Kubernetes environments (e.g. EKS, AKS
 
 [`install-nodes.sh`](https://github.com/l7mp/multicluster-broadcaster-swm-l7mp/blob/main/install-nodes.sh) is simple script that loops over the VM IPs in `hetzner-ips.txt` 
 copies all files in the `manifests/` folder, and installs all components with the [`local-install.sh`](https://github.com/l7mp/multicluster-broadcaster-swm-l7mp/blob/main/manifests/local-install.sh) script.
-During the next section we'll go through what actually happens in this install script, so you can modify it for you own usecase.
+During the next section we'll go through what actually happens in this install script, so you can modify it for your own usecase.
 
 First, [Cilium Cluster Mesh](https://docs.cilium.io/en/stable/network/clustermesh/clustermesh/#cluster-addressing-requirements) requires the Kubernetes clusters to have a distinct `Cluster ID` and `PodCIDR range`.
 Therefor, we need to configure these manually cluster-by-cluster. This is done by this "fancy" `bash` syntax at the beginning of `local-install.sh`:
@@ -65,9 +65,9 @@ Notice that the names of the clusters come from the last part of the `hostname` 
 
 Next, we install `k3s` with the following arguments:
  - do not install the built-in Traefik ingress: we'll use Nginx insted, but only because we prefer this ingress, feel free to use Traefik if you have experience with it, but make sure to match ingress annotations
- - do not install the Flanner CNI: we will install Cilium to handle cluster networking, so we don't need Flannel
- - disable Kube-proxy: Cilium will handle all functionalities of `kube-proxy` (e.g. hadling ClusterIPs), so we'll don't need it
- - disable the built-in network policy handler: Cilium will also provide the network policy functionallities
+ - do not install the Flannel CNI: we will install Cilium to handle cluster networking, so we don't need Flannel
+ - disable Kube-proxy: Cilium will handle all functionalities of `kube-proxy` (e.g. route ClusterIPs), so we won't need it
+ - disable the built-in network policy handler: Cilium will also provide the network policy functionalities
 ```
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --flannel-backend=none --disable-kube-proxy --disable-network-policy" sh -
 ```
@@ -75,7 +75,7 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --flannel-bac
 The following lines are just housekeeping after the `k3s` installation:
  - copy the `k3s` admin config file to `$HOME/.kube/config`, since other tools (Helm, Cilium CLI) will look for it in this path
  - set up `kubectl` bash completion
- - wait for the `kube-system` pods to be created (being to fast with the next steps can cause problems)
+ - wait for the `kube-system` pods to be created (being too fast with the next steps can cause problems)
  - install `helm`
 ```
 # 2: set up kubectl
@@ -160,7 +160,7 @@ and Let's Encrypt will give you a valid cert using [HTTP Challange](https://cert
 but we have a global domain name (`global.broadcaster.stunner.cc`) which will route users to the closest location (check DNS section in this guide for more details). 
 In this case the HTTP Challange won't work, since Let's Encrypt itself will only be routed to one specific cluster (usually the closest to the USA), and the other clusters won't be able to valide the challange.
 So in order to create valid certs for the global domain we need to set up [DNS Challange](https://cert-manager.io/docs/configuration/acme/dns01/) for Let's Encrypt. 
-That it is a bit more complicated, and also requires different steps based on your DNS provider (check the guides [here](https://cert-manager.io/docs/configuration/acme/dns01/#supported-dns01-providers)). 
+That is a bit more complicated, and also requires different steps based on your DNS provider (check the guides [here](https://cert-manager.io/docs/configuration/acme/dns01/#supported-dns01-providers)). 
 Our domain (`stunner.cc`) is registered at Cloudflare, so we'll show this process. You'll need the following manifests to make this work:
 ```
 apiVersion: v1
@@ -180,7 +180,7 @@ data:
   # But it makes sense to use the same key for all clusters, since in that case
   # Cert-Manager will only generate the cert once (in the first cluster) and 
   # in other cluster it can just dowload the same cert from the Let's Encrypt account.
-  # This makes the while process faster, and also without this you can easily hit
+  # This makes the whole process faster, and also without this you can easily hit
   # the rate limits of Let's Encrypt which can be frustrating
   tls.key: a-tls-key-for-lets-encrypt 
 kind: Secret
@@ -243,8 +243,9 @@ Finally, we have to set up our DNS domains. We use per-cluster subdomains to poi
 DNS load balacing, that will route users to the closest location. For this we use [Azure Traffic Manager](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview).
 You can use other providers if you prefer (e.g. [Cloudflare](https://developers.cloudflare.com/load-balancing/understand-basics/load-balancing-components/), [AWS Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html) or [GCP Cloud DNS](https://cloud.google.com/dns/docs/configure-routing-policies)), but we stick to Traffic Manager, since it is very easy to set up and also free to use in these low traffic demo environments.
 
-You can easily go the the Azure Portal and set the DNS up for yourself, but we also include a simple Terraform script to span this up.
-First, check out [`variables.tf`](https://github.com/l7mp/multicluster-broadcaster-swm-l7mp/blob/main/variables.tf) to set up your locations and IPs, then just run the following (asuming the Azure CLI is already set up):
+You can go to the [Azure Portal](https://learn.microsoft.com/en-us/azure/traffic-manager/tutorial-traffic-manager-improve-website-response) and set the DNS up for yourself, 
+but we also include a simple Terraform script to span this up.
+First, check out [`variables.tf`](https://github.com/l7mp/multicluster-broadcaster-swm-l7mp/blob/main/variables.tf) to set up your locations and IPs, then just run the following (assuming the Azure CLI is already set up):
 ```
 export ARM_SUBSCRIPTION_ID=your-subscription-id
 terraform init
