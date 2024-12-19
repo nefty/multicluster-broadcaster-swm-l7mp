@@ -237,7 +237,140 @@ kubectl apply -f broadcaster.yaml -n default
 kubectl apply -f broadcaster-udproute.yaml
 ```
 
-## 6. Set up DNS records
+## 6. Create the Cilium Cluster Mesh
+
+Next, we have to create a Cluster Mesh between the three cluster using Cilium. This will be used for the following:
+ - `Pods` can reach each other no matter in which cluster they are
+ - `EndpointSlices` will be synchronized for the `broadcaster-headless` service, so Broadcaster pods can form an [Erlang Distribution](https://www.erlang.org/doc/system/distributed.html) cluster
+
+You can automate this with the script [`mesh-install.sh`](https://github.com/l7mp/multicluster-broadcaster-swm-l7mp/blob/main/mesh-install.sh), but here is a step-by-step guide on what should be done.
+Also, please check out the [official install guide](https://docs.cilium.io/en/stable/network/clustermesh/clustermesh/) of Cilium Cluster Mesh.
+
+Fisrt, we need to collect all the Kubernetes config files in one, and create `context` names for each. This is done by these lines:
+```
+# set env vars
+KUBECONFIG=.kube/config
+CLUSTER1=germany
+CLUSTER2=us-west
+CLUSTER3=singapore
+
+CLUSTER1IP=116.203.254.213
+CLUSTER2IP=5.78.69.126
+CLUSTER3IP=5.223.46.141
+
+# get kubeconfig files
+scp -o "StrictHostKeyChecking no" root@$CLUSTER1.broadcaster.stunner.cc:.kube/config ./$CLUSTER1
+sed -i "s/127.0.0.1/$CLUSTER1IP/" $CLUSTER1
+sed -i "s/default/$CLUSTER1/" $CLUSTER1
+
+scp -o "StrictHostKeyChecking no" root@$CLUSTER2.broadcaster.stunner.cc:.kube/config ./$CLUSTER2
+sed -i "s/127.0.0.1/$CLUSTER2IP/" $CLUSTER2
+sed -i "s/default/$CLUSTER2/" $CLUSTER2
+
+scp -o "StrictHostKeyChecking no" root@$CLUSTER3.broadcaster.stunner.cc:.kube/config ./$CLUSTER3
+sed -i "s/127.0.0.1/$CLUSTER3IP/" $CLUSTER3
+sed -i "s/default/$CLUSTER3/" $CLUSTER3
+
+export KUBECONFIG=$CLUSTER1:$CLUSTER2:$CLUSTER3
+```
+Note: this part assumes that the VMs has a public IP in their priary interface. You will need additional steps if you use VMs behind NAT (use `--tls-san` during the `k3s` install), 
+or something very differnet in case you use managed Kubernetes clusters insted of `k3s`.
+
+Then, install the Cilium CLI:
+```
+CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
+CLI_ARCH=amd64
+if [ "$(uname -m)" = "aarch64" ]; then CLI_ARCH=arm64; fi
+curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
+sudo tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz /usr/local/bin
+rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+```
+
+Next, we need to synchronize the Cilium CA certificates in all cluster. 
+If they do not match between clusters the multi-cluster features might be limited!
+```
+kubectl --context $CLUSTER2 delete secret -n kube-system cilium-ca
+kubectl --context=$CLUSTER1 get secret -n kube-system cilium-ca -o yaml |  kubectl --context $CLUSTER2 create -f -
+kubectl --context $CLUSTER2 delete pod -n kube-system -l app.kubernetes.io/part-of=cilium
+kubectl --context $CLUSTER3 delete secret -n kube-system cilium-ca
+kubectl --context=$CLUSTER1 get secret -n kube-system cilium-ca -o yaml |  kubectl --context $CLUSTER3 create -f -
+kubectl --context $CLUSTER3 delete pod -n kube-system -l app.kubernetes.io/part-of=cilium
+```
+
+Next, enable cluster mesh in all clusters:
+```
+cilium clustermesh enable --context $CLUSTER1 --service-type LoadBalancer
+cilium clustermesh enable --context $CLUSTER2 --service-type LoadBalancer
+cilium clustermesh enable --context $CLUSTER3 --service-type LoadBalancer
+
+# optionally check cluster mesh status
+cilium clustermesh status --context $CLUSTER1
+cilium clustermesh status --context $CLUSTER2
+cilium clustermesh status --context $CLUSTER3
+```
+
+Finally, connect the clusters to each other.
+Cluster connection is symmetric, so it only needs to be done one-way.
+```
+cilium clustermesh connect --context $CLUSTER1 --destination-context $CLUSTER2
+cilium clustermesh connect --context $CLUSTER1 --destination-context $CLUSTER3
+cilium clustermesh connect --context $CLUSTER2 --destination-context $CLUSTER3
+```
+
+Optionally you can re-check cluster mesh status, and run some connectivity test:
+```
+cilium clustermesh status --context $CLUSTER1 --wait
+cilium clustermesh status --context $CLUSTER2 --wait
+cilium clustermesh status --context $CLUSTER3 --wait
+
+# test conenctions (takes a while)
+cilium connectivity test --context $CLUSTER1 --multi-cluster $CLUSTER2
+cilium connectivity test --context $CLUSTER1 --multi-cluster $CLUSTER3
+```
+
+If you done everything right, pods in one cluster should have connectivity to any pod in any other cluster.
+Moreover, services with the same name and the annotation `service.cilium.io/global: "true"` should be load balanced across clusters.
+Check out more on the `service discovery` and `load balancing` in Cilium Cluster Mesh [here](https://docs.cilium.io/en/stable/network/clustermesh/services/).
+
+In our case, the `broadcaster-headless` service is set up to synchronize the `EndpointSlices` in all clusters:
+```
+user@broadcaster-stunner-demo-singapore:~# kubectl get service broadcaster-headless -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/global-sync-endpoint-slices: "true"
+  name: broadcaster-headless
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    app: broadcaster
+  type: ClusterIP
+```
+
+So if you check the `EndpointSlices`, you should see the IP addresses of the `pods` from the other clusters:
+```
+user@broadcaster-stunner-demo-singapore:~# kubectl get endpointslices.discovery.k8s.io
+NAME                                 ADDRESSTYPE   PORTS     ENDPOINTS      AGE
+broadcaster-headless-68k5g           IPv4          <unset>   10.103.0.58    7d1h
+broadcaster-headless-germany-69l5t   IPv4          <unset>   10.101.0.81    6d23h
+broadcaster-headless-us-west-q7qvs   IPv4          <unset>   10.102.0.220   6d23h
+```
+
+Note: we use Cilium Cluster Mesh in our demo since we set up Kubernetes clusters manually using `k3s`.
+In a production scenario one would use managed Kubernetes environments like AKS, EKS or GKE.
+You can set up all these solutions to have pod-to-pod connections across clusters (e.g. by having pods directly addressable in a VPC) and 
+synchronize `Endpoints` or `EndpointSlices` between clusters. To that end, you won't need to install the Cilium CNI and Cluster Mesh (although you might be able to, since 
+most of these solutions are using Cilium by default). These guides are a good starting point if you using a managed Kubernetes solution:
+ - [AKS](https://learn.microsoft.com/en-us/azure/kubernetes-fleet/l4-load-balancing)
+ - [EKS](https://aws-solutions-library-samples.github.io/compute/multi-cluster-application-management-with-karmada-and-amazon-eks.html)
+ - [GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services)
+
+
+## 7. Set up DNS records
 
 Finally, we have to set up our DNS domains. We use per-cluster subdomains to point to a given cluster, and we also use a global domain with 
 DNS load balacing, that will route users to the closest location. For this we use [Azure Traffic Manager](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview).
