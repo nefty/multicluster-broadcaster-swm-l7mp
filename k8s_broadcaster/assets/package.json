@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "chart.js": "^4.4.7"
+    "chart.js": "^4.4.7",
+    "three": "^0.171.0",
+    "three-globe": "^2.37.5"
   },
   "devDependencies": {
     "prettier": "^3.4.2"

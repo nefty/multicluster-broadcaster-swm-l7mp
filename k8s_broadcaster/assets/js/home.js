@@ -4,6 +4,7 @@ import { WHEPClient } from "./whep_client.js";
 import { TimeSeries } from "./time_series.js";
 
 import Chart from "chart.js/auto";
+import { Globe } from "./globe.js";
 
 async function connectSignaling(view) {
   view.channel = view.socket.channel("k8s_broadcaster:signaling");
@@ -560,5 +561,9 @@ export const Home = {
       "freezeDuration",
       view.stats.freezeDurationTS
     );
+
+    view.globe = new Globe("cluster-view");
+    view.globe.animate();
+    console.log("Started globe animation");
   },
 };
