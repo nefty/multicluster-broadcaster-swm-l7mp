@@ -9,7 +9,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 function initRenderer() {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(900, 600);
+  renderer.setSize(734, 450);
   return renderer;
 }
 
@@ -50,7 +50,7 @@ function initScene(globe, camera) {
 
 function initCamera() {
   const camera = new THREE.PerspectiveCamera();
-  camera.aspect = 900 / 600;
+  camera.aspect = 734 / 450;
   camera.updateProjectionMatrix();
 
   var dLight = new THREE.DirectionalLight(0xffffff, 10);
@@ -118,10 +118,10 @@ export class Globe {
   }
 
   #onWindowResize() {
-    this.camera.aspect = 900 / 600;
+    this.camera.aspect = 734 / 450;
     this.camera.updateProjectionMatrix();
-    this.windowHalfX = 900 / 1.5;
-    this.windowHalfY = 600 / 1.5;
-    this.renderer.setSize(900, 600);
+    this.windowHalfX = 734 / 1.5;
+    this.windowHalfY = 734 / 1.5;
+    this.renderer.setSize(734, 450);
   }
 }

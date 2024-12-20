@@ -1,37 +1,41 @@
-<header class="px-4 sm:px-6 lg:px-7">
-  <div class="flex flex-col lg:flex-row items-center justify-between border-b border-brand/15 py-3 text-sm">
-    <div class="flex items-center gap-4">
-      <a href="https://elixir-webrtc.org">
-        <img src={~p"/images/elixir_webrtc_logo.svg"} width="225" />
-      </a>
-      <a href="https://github.com/l7mp/stunner">
-        <img src={~p"/images/stunner_logo.svg"} width="150" />
-      </a>
+<header class="flex flex-row justify-content items-center w-full px-7 py-9 bg-[#F6F5FF]">
+  <div class="max-w-[1500px] w-full m-auto flex flex-row items-center justify-between">
+    <div class="flex flex-col">
+      <span class="font-dmsans text-[#050C25] non-italic text-[32px] leading-[140%] font-bold">
+        K8s Broadcaster
+      </span>
+      <span class="font-dmsans text-[#675AF1] non-italic text-[16px] leading-[140%] font-medium">
+        built with
+        <a class="underline underline-offset-2" href="https://elixir-webrtc.org">Elixir WebRTC</a>
+        and
+        <a class="underline underline-offset-2" href="https://github.com/l7mp/stunner">Stunner</a>
+      </span>
     </div>
     <div class="flex">
       <div class="flex items-center gap-6 font-semibold leading-6 text-brand/80">
-        <div class="flex gap-1">
-          <p id="viewercount">0</p>
-          <.icon name="hero-user-solid" />
+        <div class="flex gap-2 items-center">
+          <p
+            class="font-dmsans font-medium non-italic leading-[140%] text-[16px] text-[#675AF1]"
+            id="viewercount"
+          >
+            0
+          </p>
+          <img src={~p"/images/person.svg"} width="38" />
         </div>
-        <a
-          href="https://github.com/l7mp/multicluster-broadcaster-swm-l7mp"
-          class="rounded-lg bg-brand/10 px-2 py-1 hover:bg-brand/20"
-          target="_blank"
-        >
-          GitHub
+        <a href="https://github.com/l7mp/multicluster-broadcaster-swm-l7mp" target="_blank">
+          <img src={~p"/images/github.svg"} width="38" />
         </a>
       </div>
     </div>
   </div>
 </header>
 <main class="flex-1 min-h-0">
-  <div class="h-full py-7 px-7">
+  <div class="h-full">
     <.flash_group flash={@flash} />
     {@inner_content}
   </div>
 </main>
-<footer class="flex flex-row px-4 py-2 justify-center items-center font-semibold text-brand/80">
+<footer class="w-full m-auto flex flex-row px-7 py-9 justify-center items-center">
   <a href="https://swmansion.com" target="_blank">
     <img src={~p"/images/swm_logo.svg"} width="60px" class="p-2" />
   </a>

@@ -1,157 +1,181 @@
 <div id="home" phx-hook="Home" class="flex flex-col gap-6">
-  <div class="flex flex-row gap-6">
-    <div id="cluster-wrapper" class="flex flex-1 flex-col p-2 gap-5">
-      <div id="cluster-view" class="flex flex-1 justify-center items-center"></div>
-      <div id="cluster-buttons" class="flex flex-col gap-5">
-        <div class="flex flex-row gap-5">
+  <div class="bg-[#F6F5FF] pt-7 pb-24 px-7">
+    <div class="flex flex-row gap-6 max-w-[1500px] w-full m-auto">
+      <div id="cluster-wrapper" class="flex flex-1 flex-col pr-2 gap-4">
+        <p class="font-dmsans text-[16px] font-bold non-italic leading-[140%] text-[#050C25]">
+          Cluster view
+        </p>
+        <div id="cluster-view" class="flex flex-1 justify-center items-center"></div>
+        <div id="cluster-buttons" class="flex flex-col gap-5">
+          <div class="flex flex-row gap-5">
+            <button
+              id="button-1"
+              value={K8sBroadcaster.Application.cluster(:c1).url || assigns[:current_url]}
+              class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
+            >
+              Join {K8sBroadcaster.Application.cluster(:c1).reg || "LOC"}
+            </button>
+            <button
+              id="button-2"
+              value={K8sBroadcaster.Application.cluster(:c2).url || assigns[:current_url]}
+              class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
+            >
+              Join {K8sBroadcaster.Application.cluster(:c2).reg || "LOC"}
+            </button>
+            <button
+              id="button-3"
+              value={K8sBroadcaster.Application.cluster(:c3).url || assigns[:current_url]}
+              class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
+            >
+              Join {K8sBroadcaster.Application.cluster(:c3).reg || "LOC"}
+            </button>
+          </div>
           <button
-            id="button-1"
-            value={K8sBroadcaster.Application.cluster(:c1).url || assigns[:current_url]}
-            class="flex-1 p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
+            id="button-auto"
+            value={K8sBroadcaster.Application.cluster(:c0).url || assigns[:current_url]}
+            class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
           >
-            Join {K8sBroadcaster.Application.cluster(:c1).reg || "LOC"}
-          </button>
-          <button
-            id="button-2"
-            value={K8sBroadcaster.Application.cluster(:c2).url || assigns[:current_url]}
-            class="flex-1 p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
-          >
-            Join {K8sBroadcaster.Application.cluster(:c2).reg || "LOC"}
-          </button>
-          <button
-            id="button-3"
-            value={K8sBroadcaster.Application.cluster(:c3).url || assigns[:current_url]}
-            class="flex-1 p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
-          >
-            Join {K8sBroadcaster.Application.cluster(:c3).reg || "LOC"}
+            Join geographically closest
           </button>
         </div>
-        <button
-          id="button-auto"
-          value={K8sBroadcaster.Application.cluster(:c0).url || assigns[:current_url]}
-          class="p-2 bg-brand/10 rounded-lg border-2 border-brand/50 text-brand font-semibold"
-        >
-          Join geographically closest
-        </button>
       </div>
-    </div>
 
-    <div id="videoplayer-wrapper" class="flex flex-1 flex-col gap-3 overflow-y-scroll">
-      <p id="status-message" class="text-brand/80 font-semibold hidden">
-        Waiting for the stream to begin...
-      </p>
-      <p class="text-lg">
-        Received video stream
-      </p>
-      <video id="videoplayer" class="w-full rounded-xl bg-black" controls autoplay muted></video>
-      <div class="flex flex-col gap-2">
-        <div>
-          <label for="video-quality">Video quality</label>
-          <select name="video-quality" id="video-quality">
-            <option value="h" selected>High</option>
-            <option value="m">Medium</option>
-            <option value="l">Low</option>
-          </select>
-        </div>
-        <div>
-          <label for="packet-loss-range">Packet loss (%): </label>
-          <output id="packet-loss-range-output" for="packet-loss-range">0</output>
-          <.input
-            id="packet-loss-range"
-            name="packet-loss"
-            type="range"
-            value="0"
-            min="0"
-            max="100"
-          />
-          <p></p>
-        </div>
-        <div class="flex gap-2 items-center">
-          <label for="rtx-checkbox">RTX</label>
-          <.input id="rtx-checkbox" name="rtx" type="checkbox" checked />
+      <div id="videoplayer-wrapper" class="flex flex-1 flex-col gap-4 overflow-y-scroll">
+        <p class="font-dmsans text-[16px] font-bold non-italic leading-[140%] text-[#050C25]">
+          Received stream
+        </p>
+        <video id="videoplayer" class="w-full bg-black" controls autoplay muted></video>
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-4 items-center">
+            <label
+              for="video-quality"
+              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+            >
+              Video quality
+            </label>
+            <select
+              name="video-quality"
+              id="video-quality"
+              class="border border-solid border-[#675AF1] rounded-lg font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#675AF1]"
+            >
+              <option value="h" selected>High</option>
+              <option value="m">Medium</option>
+              <option value="l">Low</option>
+            </select>
+          </div>
+          <div>
+            <label
+              for="packet-loss-range"
+              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+            >
+              Packet loss (%):
+            </label>
+            <output id="packet-loss-range-output" for="packet-loss-range">0</output>
+            <.input
+              id="packet-loss-range"
+              name="packet-loss"
+              type="range"
+              value="0"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="flex gap-2 items-center">
+            <label
+              for="rtx-checkbox"
+              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+            >
+              Retransmissions
+            </label>
+            <input
+              id="rtx-checkbox"
+              name="rtx"
+              type="checkbox"
+              class="rounded accent-[#675AF1] text-[#675AF1] focus:ring-0"
+              checked
+            />
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="videoplayer-stats" class="p-2 rounded-lg border-2">
-    <table id="stats">
-      <tbody>
-        <tr>
-          <td>duration</td>
-          <td id="duration">0</td>
-        </tr>
-        <tr>
-          <td>rtt (ms)</td>
-          <td id="rtt">0</td>
-        </tr>
-        <tr>
-          <td>audioBitrate (kbps)</td>
-          <td id="audio-bitrate">0</td>
-        </tr>
-        <tr>
-          <td>videoBitrate (kbps)</td>
-          <td id="video-bitrate">0</td>
-        </tr>
-        <tr>
-          <td>packetsReceived/s</td>
-          <td id="packets-received">0</td>
-        </tr>
-        <tr>
-          <td>frameWidth</td>
-          <td id="frame-width">0</td>
-        </tr>
-        <tr>
-          <td>frameHeight</td>
-          <td id="frame-height">0</td>
-        </tr>
-        <tr>
-          <td>framesPerSecond</td>
-          <td id="fps">0</td>
-        </tr>
-        <tr>
-          <td>keyframesDecoded</td>
-          <td id="keyframes-decoded">0</td>
-        </tr>
-        <tr>
-          <td>pliCount</td>
-          <td id="pli-count">0</td>
-        </tr>
-        <tr>
-          <td>packetLoss (%)</td>
-          <td id="packet-loss">0</td>
-        </tr>
-        <tr>
-          <td>nackCount</td>
-          <td id="nack-count">0</td>
-        </tr>
-        <tr>
-          <td>avgJitterBufferDelay (ms)</td>
-          <td id="avg-jitter-buffer-delay">0</td>
-        </tr>
-        <tr>
-          <td>freezeCount</td>
-          <td id="freeze-count">0</td>
-        </tr>
-        <tr>
-          <td>freezeDuration (s)</td>
-          <td id="freeze-duration">0</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="flex flex-row flex-wrap">
-    <div class="w-96"><canvas id="rtt-chart"></canvas></div>
-    <div class="w-96"><canvas id="audio-chart"></canvas></div>
-    <div class="w-96"><canvas id="video-chart"></canvas></div>
-    <div class="w-96"><canvas id="packetsReceived-chart"></canvas></div>
-    <div class="w-96"><canvas id="fps-chart"></canvas></div>
-    <div class="w-96"><canvas id="keyframesDecoded-chart"></canvas></div>
-    <div class="w-96"><canvas id="pliCount-chart"></canvas></div>
-    <div class="w-96"><canvas id="packetLoss-chart"></canvas></div>
-    <div class="w-96"><canvas id="nackCount-chart"></canvas></div>
-    <div class="w-96"><canvas id="avgJitter-chart"></canvas></div>
-    <div class="w-96"><canvas id="freezeCount-chart"></canvas></div>
-    <div class="w-96"><canvas id="freezeDuration-chart"></canvas></div>
+  <div class="py-7 px-7">
+    <div
+      id="videoplayer-stats"
+      class="flex flex-col justify-center items-center w-full max-w-[1500px] m-auto gap-16"
+    >
+      <p class="font-dmsans non-italic font-bold text-[24px] leading-[140%] text-[#050C25]">
+        Statistics
+      </p>
+      <table
+        id="stats"
+        class="w-[1000px] font-dmsans non-italic font-medium text-[16px] text-[#050C25]"
+      >
+        <tbody>
+          <tr class="border border-[#675AF1] border-solid">
+            <td class="py-1 pl-6">duration</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="duration">0</td>
+            <td class="py-1 pl-6">rtt (ms)</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="rtt">0</td>
+            <td class="py-1 pl-6">audioBitrate (kbps)</td>
+            <td class="py-1 text-right pr-6" id="audio-bitrate">0</td>
+          </tr>
+          <tr class="border border-[#675AF1] border-solid">
+            <td class="py-1 pl-6">videoBitrate (kbps)</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="video-bitrate">0</td>
+            <td class="py-1 pl-6">packetsReceived/s</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="packets-received">
+              0
+            </td>
+            <td class="py-1 pl-6">frameWidth</td>
+            <td class="py-1 text-right pr-6" id="frame-width">0</td>
+          </tr>
+          <tr class="border border-[#675AF1] border-solid">
+            <td class="py-1 pl-6">frameHeight</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="frame-height">0</td>
+            <td class="py-1 pl-6">framesPerSecond</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="fps">0</td>
+            <td class="py-1 pl-6">keyframesDecoded</td>
+            <td class="py-1 text-right pr-6" id="keyframes-decoded">0</td>
+          </tr>
+          <tr class="border border-[#675AF1] border-solid">
+            <td class="py-1 pl-6">pliCount</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="pli-count">0</td>
+            <td class="py-1 pl-6">packetLoss (%)</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="packet-loss">0</td>
+            <td class="py-1 pl-6">nackCount</td>
+            <td class="py-1 text-right pr-6" id="nack-count">0</td>
+          </tr>
+          <tr class="border border-[#675AF1] border-solid">
+            <td class="py-1 pl-6">avgJitterBufferDelay (ms)</td>
+            <td
+              class="py-1 text-right pr-6 border-r border-[#675AF1]"
+              id="avg-jitter-buffer-delay"
+            >
+              0
+            </td>
+            <td class="py-1 pl-6">freezeCount</td>
+            <td class="py-1 text-right pr-6 border-r border-[#675AF1]" id="freeze-count">0</td>
+            <td class="py-1 pl-6">freezeDuration (s)</td>
+            <td class="py-1 text-right pr-6" id="freeze-duration">0</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flex flex-row flex-wrap justify-center items-center gap-x-24">
+        <div class="w-96"><canvas id="rtt-chart"></canvas></div>
+        <div class="w-96"><canvas id="audio-chart"></canvas></div>
+        <div class="w-96"><canvas id="video-chart"></canvas></div>
+        <div class="w-96"><canvas id="packetsReceived-chart"></canvas></div>
+        <div class="w-96"><canvas id="fps-chart"></canvas></div>
+        <div class="w-96"><canvas id="keyframesDecoded-chart"></canvas></div>
+        <div class="w-96"><canvas id="pliCount-chart"></canvas></div>
+        <div class="w-96"><canvas id="packetLoss-chart"></canvas></div>
+        <div class="w-96"><canvas id="nackCount-chart"></canvas></div>
+        <div class="w-96"><canvas id="avgJitter-chart"></canvas></div>
+        <div class="w-96"><canvas id="freezeCount-chart"></canvas></div>
+        <div class="w-96"><canvas id="freezeDuration-chart"></canvas></div>
+      </div>
+    </div>
   </div>
 </div>

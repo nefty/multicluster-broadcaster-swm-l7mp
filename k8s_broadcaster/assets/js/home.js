@@ -27,15 +27,15 @@ async function connectSignaling(view) {
     .join()
     .receive("ok", () => {
       console.log("Joined signaling channel successfully");
-      view.statusMessage.innerText =
-        "Connected. Waiting for the stream to begin...";
-      view.statusMessage.classList.remove("hidden");
+      // view.statusMessage.innerText =
+      //   "Connected. Waiting for the stream to begin...";
+      // view.statusMessage.classList.remove("hidden");
     })
     .receive("error", (resp) => {
       console.error("Unable to join signaling channel", resp);
-      view.statusMessage.innerText =
-        "Unable to join the stream, try again in a few minutes";
-      view.statusMessage.classList.remove("hidden");
+      // view.statusMessage.innerText =
+      //   "Unable to join the stream, try again in a few minutes";
+      // view.statusMessage.classList.remove("hidden");
     });
 }
 
@@ -67,7 +67,7 @@ async function connectInput(view) {
   view.whepClient.onstream = (stream) => {
     console.log(`[${view.inputId}]: Received new stream`);
     view.videoPlayer.srcObject = stream;
-    view.statusMessage.classList.add("hidden");
+    // view.statusMessage.classList.add("hidden");
   };
 
   view.whepClient.onconnected = () => {
@@ -104,9 +104,9 @@ async function removeInput(view) {
     view.videoPlayer.srcObject = null;
   }
 
-  view.statusMessage.innerText =
-    "Connected. Waiting for the stream to begin...";
-  view.statusMessage.classList.remove("hidden");
+  // view.statusMessage.innerText =
+  //   "Connected. Waiting for the stream to begin...";
+  // view.statusMessage.classList.remove("hidden");
 
   clearInterval(view.stats.intervalId);
   view.stats.lastAudioReport = null;
@@ -228,7 +228,7 @@ function processVideoReport(view, report) {
   view.stats.fps.innerText = report.framesPerSecond || 0;
   view.stats.keyframesDecoded.innerText = report.keyFramesDecoded;
   view.stats.pliCount.innerText = report.pliCount;
-  view.stats.avgJitterBufferDelay.innerText = avgJitterBufferDelay;
+  view.stats.avgJitterBufferDelay.innerText = avgJitterBufferDelay.toFixed(2);
   view.stats.freezeCount.innerText = report.freezeCount;
   view.stats.freezeDuration.innerText = report.totalFreezesDuration;
   // nacks seem to be present only for video?
@@ -248,7 +248,7 @@ function processVideoReport(view, report) {
   view.stats.fpsTS.push(timestamp, report.framesPerSecond || 0);
   view.stats.keyframesDecodedTS.push(timestamp, report.keyFramesDecoded);
   view.stats.pliCountTS.push(timestamp, report.pliCount);
-  view.stats.avgJitterTS.push(timestamp, avgJitterBufferDelay);
+  view.stats.avgJitterTS.push(timestamp, avgJitterBufferDelay.toFixed(2));
   view.stats.freezeCountTS.push(timestamp, report.freezeCount);
   view.stats.freezeDurationTS.push(timestamp, report.totalFreezesDuration);
   view.stats.nackCountTS.push(timestamp, report.nackCount);
@@ -398,6 +398,7 @@ function createChart(ctx, name, ts) {
           data: ts.y,
           borderWidth: 1,
           pointRadius: 0,
+          borderColor: "#675AF1",
         },
       ],
     },
@@ -438,7 +439,7 @@ export const Home = {
     view.videoQuality = document.getElementById("video-quality");
     view.rtxCheckbox = document.getElementById("rtx-checkbox");
     view.videoPlayer = document.getElementById("videoplayer");
-    view.statusMessage = document.getElementById("status-message");
+    // view.statusMessage = document.getElementById("status-message");
     view.packetLossRange = document.getElementById("packet-loss-range");
     view.packetLossRangeOutput = document.getElementById(
       "packet-loss-range-output"
