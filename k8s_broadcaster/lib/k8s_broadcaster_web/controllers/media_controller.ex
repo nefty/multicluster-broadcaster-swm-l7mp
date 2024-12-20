@@ -41,8 +41,17 @@ defmodule K8sBroadcasterWeb.MediaController do
   end
 
   def whep(conn, _params) do
+    # Allow not only for plain SDP but also for a JSON
+    # with custom configuration options.
+    decode_body = fn body ->
+      case Jason.decode(body) do
+        {:ok, %{"sdp" => offer_sdp, "rtx" => rtx}} = ret -> ret
+        _ -> {:ok, %{"sdp" => body, "rtx" => true}}
+      end
+    end
+
     with {:ok, body, conn} <- read_body(conn),
-         {:ok, %{"sdp" => offer_sdp, "rtx" => rtx}} <- Jason.decode(body),
+         {:ok, %{"sdp" => offer_sdp, "rtx" => rtx}} <- decode_body.(body),
          {:ok, pc, pc_id, answer_sdp} <- PeerSupervisor.start_whep(offer_sdp, rtx),
          :ok <- Forwarder.connect_output(pc) do
       uri = ~p"/api/resource/#{pc_id}"
