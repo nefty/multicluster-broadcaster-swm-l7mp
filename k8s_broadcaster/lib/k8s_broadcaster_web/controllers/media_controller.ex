@@ -7,8 +7,8 @@ defmodule K8sBroadcasterWeb.MediaController do
   @sse ~s/rel = "urn:ietf:params:whep:ext:core:server-sent-events"; events="layers"/
   @layer ~s/rel = "urn:ietf:params:whep:ext:core:layer"/
 
-  plug :accepts, ["sdp"] when action in [:whip, :whep]
-  plug :accepts, ["trickle-ice-sdpfrag"] when action in [:ice_candidate]
+  plug(:accepts, ["sdp"] when action in [:whip, :whep])
+  plug(:accepts, ["trickle-ice-sdpfrag"] when action in [:ice_candidate])
 
   # Used by Corsica in handling CORS requests: allows fetching response headers
   # by external WHEP players implemented in a browser.
@@ -40,13 +40,11 @@ defmodule K8sBroadcasterWeb.MediaController do
     |> send_resp()
   end
 
-  def whep(conn, params) do
-    input_id = params["inputId"]
-
+  def whep(conn, _params) do
     with {:ok, body, conn} <- read_body(conn),
          {:ok, %{"sdp" => offer_sdp, "rtx" => rtx}} <- Jason.decode(body),
          {:ok, pc, pc_id, answer_sdp} <- PeerSupervisor.start_whep(offer_sdp, rtx),
-         :ok <- Forwarder.connect_output(pc, input_id) do
+         :ok <- Forwarder.connect_output(pc) do
       uri = ~p"/api/resource/#{pc_id}"
 
       conn

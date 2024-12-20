@@ -42,9 +42,9 @@ async function connectSignaling(view) {
 async function connectInput(view) {
   let whepEndpoint;
   if (view.url) {
-    whepEndpoint = view.url + "api/whep?inputId=" + view.inputId;
+    whepEndpoint = view.url + "api/whep";
   } else {
-    whepEndpoint = view.whepEndpointBase + "?inputId=" + view.inputId;
+    whepEndpoint = view.whepEndpointBase;
   }
 
   console.log("Trying to connect to: ", whepEndpoint);

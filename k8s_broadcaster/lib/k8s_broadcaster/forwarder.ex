@@ -69,9 +69,9 @@ defmodule K8sBroadcaster.Forwarder do
     GenServer.call(__MODULE__, {:connect_input, id, pc})
   end
 
-  @spec connect_output(pid(), id()) :: :ok
-  def connect_output(pc, input_id) do
-    GenServer.call(__MODULE__, {:connect_output, input_id, pc})
+  @spec connect_output(pid()) :: :ok
+  def connect_output(pc) do
+    GenServer.call(__MODULE__, {:connect_output, pc})
   end
 
   @spec get_input() :: input_spec() | nil
@@ -182,13 +182,13 @@ defmodule K8sBroadcaster.Forwarder do
   end
 
   @impl true
-  def handle_call({:connect_output, id, pc}, _from, state) do
+  def handle_call({:connect_output, pc}, _from, state) do
     Process.monitor(pc)
 
     PeerConnection.controlling_process(pc, self())
     pending_outputs = MapSet.put(state.pending_outputs, pc)
 
-    Logger.info("Added new output #{inspect(pc)} for input #{inspect(id)}")
+    Logger.info("Added new output #{inspect(pc)}")
     Process.send_after(self(), {:connect_timeout, pc}, @connect_timeout_ms)
 
     {:reply, :ok, %{state | pending_outputs: pending_outputs}}
