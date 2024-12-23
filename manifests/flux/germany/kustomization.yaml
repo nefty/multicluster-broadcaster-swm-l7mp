@@ -18,9 +18,6 @@ patches:
     - op: replace
       path: /spec/template/spec/containers/0/env/1/value
       value: "germany.broadcaster.stunner.cc"
-    - op: replace
-      path: /spec/template/spec/containers/0/env/2/value
-      value: "GER"
   target:
     kind: StatefulSet
     name: broadcaster

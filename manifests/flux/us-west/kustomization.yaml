@@ -18,9 +18,6 @@ patches:
     - op: replace
       path: /spec/template/spec/containers/0/env/1/value
       value: "us-west.broadcaster.stunner.cc"
-    - op: replace
-      path: /spec/template/spec/containers/0/env/2/value
-      value: "USWEST"
   target:
     kind: StatefulSet
     name: broadcaster

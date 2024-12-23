@@ -1,5 +1,12 @@
 import Config
 
+read_region = fn ->
+  case System.get_env("PHX_HOST") do
+    nil -> nil
+    host -> String.split(host, ".") |> List.first()
+  end
+end
+
 read_cluster! = fn env ->
   case System.get_env(env) do
     nil ->
@@ -88,7 +95,7 @@ dist_config =
   end
 
 config :k8s_broadcaster,
-  region: System.get_env("REGION"),
+  region: read_region.(),
   cluster_info: cluster_info,
   pc_config: pc_config,
   dist_config: dist_config

@@ -133,8 +133,7 @@ export class Globe {
   addArcs(startingRegion) {
     if (!startingRegion) return;
     const arcsData = [];
-
-    const streamer = this.labels.find((label) => label.text === startingRegion);
+    const streamer = this.labels.find((label) => label.text.toLowerCase() === startingRegion.toLowerCase());
     if (!streamer) return;
     this.labels.forEach((label) => {
       if (label != streamer) {
