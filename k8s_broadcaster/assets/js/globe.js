@@ -76,7 +76,7 @@ function initControls(camera, renderer) {
   controls.enableDamping = true;
   controls.dynamicDampingFactor = 0.01;
   controls.enablePan = false;
-  controls.minDistance = 200;
+  controls.minDistance = 150;
   controls.maxDistance = 500;
   controls.rotateSpeed = 0.8;
   controls.zoomSpeed = 1;
@@ -140,7 +140,7 @@ export class Globe {
     this.globe
       .arcsData(arcsData)
       .arcColor(() => "#00f5d4")
-      .arcStroke(0.5)
+      .arcStroke(2)
       .arcDashLength(0.01)
       .arcDashGap(0.01)
       .arcDashAnimateTime(10000);
