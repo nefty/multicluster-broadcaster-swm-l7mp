@@ -3,11 +3,11 @@ import Config
 read_cluster! = fn env ->
   case System.get_env(env) do
     nil ->
-      %{reg: nil, url: nil}
+      %{reg: nil, url: nil, lat: nil, lng: nil}
 
     cluster ->
-      [reg, url] = String.split(cluster, ";")
-      %{reg: reg, url: url}
+      [reg, url, lat, lng] = String.split(cluster, ";")
+      %{reg: reg, url: url, lat: lat, lng: lng}
   end
 end
 
@@ -88,6 +88,7 @@ dist_config =
   end
 
 config :k8s_broadcaster,
+  region: System.get_env("REGION"),
   cluster_info: cluster_info,
   pc_config: pc_config,
   dist_config: dist_config

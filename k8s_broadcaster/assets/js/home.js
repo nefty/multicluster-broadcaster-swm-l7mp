@@ -12,21 +12,24 @@ async function connectSignaling(view) {
   const presence = new Presence(view.channel);
   presence.onSync(() => (viewercount.innerText = presence.list().length));
 
-  view.channel.on("input_added", ({ id: id }) => {
+  view.channel.on("input_added", ({ id: id, region: region }) => {
     console.log("New input:", id);
     view.inputId = id;
+    view.globe.addArcs(region);
     connectInput(view);
   });
 
   view.channel.on("input_removed", ({ id: id }) => {
     console.log("Input removed:", id);
+    view.globe.removeArcs();
     removeInput(view);
   });
 
   view.channel
     .join()
-    .receive("ok", () => {
+    .receive("ok", ({ labels: labels }) => {
       console.log("Joined signaling channel successfully");
+      view.globe.addLabels(labels);
       // view.statusMessage.innerText =
       //   "Connected. Waiting for the stream to begin...";
       // view.statusMessage.classList.remove("hidden");
@@ -341,7 +344,7 @@ function updatePacketLoss(view) {
   const timestamp = toXLabel(
     new Date(
       view.stats.lastAudioReport.timestamp ||
-        view.stats.lastVideoReport.timestamp
+      view.stats.lastVideoReport.timestamp
     )
   );
   view.stats.packetLoss.innerText = packetLoss;

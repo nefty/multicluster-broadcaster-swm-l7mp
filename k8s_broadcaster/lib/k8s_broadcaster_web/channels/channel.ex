@@ -7,7 +7,10 @@ defmodule K8sBroadcasterWeb.Channel do
 
   @spec input_added(String.t()) :: :ok
   def input_added(id) do
-    Endpoint.broadcast!("k8s_broadcaster:signaling", "input_added", %{id: id})
+    Endpoint.broadcast!("k8s_broadcaster:signaling", "input_added", %{
+      id: id,
+      region: Application.fetch_env!(:k8s_broadcaster, :region)
+    })
   end
 
   @spec input_removed(String.t()) :: :ok
@@ -18,7 +21,7 @@ defmodule K8sBroadcasterWeb.Channel do
   @impl true
   def join("k8s_broadcaster:signaling", _, socket) do
     send(self(), :after_join)
-    {:ok, socket}
+    {:ok, %{labels: get_labels()}, socket}
   end
 
   @impl true
@@ -27,8 +30,14 @@ defmodule K8sBroadcasterWeb.Channel do
     push(socket, "presence_state", Presence.list(socket))
 
     case K8sBroadcaster.Forwarder.get_input() do
-      nil -> :ok
-      input -> push(socket, "input_added", %{id: input.id})
+      nil ->
+        :ok
+
+      input ->
+        push(socket, "input_added", %{
+          id: input.id,
+          region: Application.fetch_env!(:k8s_broadcaster, :region)
+        })
     end
 
     {:noreply, socket}
@@ -42,5 +51,15 @@ defmodule K8sBroadcasterWeb.Channel do
     end
 
     {:noreply, socket}
+  end
+
+  defp get_labels() do
+    # converts cluster_info into labels that are ready
+    # to be displayed on the globe
+    Application.fetch_env!(:k8s_broadcaster, :cluster_info)
+    |> Map.take([:c1, :c2, :c3])
+    |> Enum.map(fn {_key, cluster} -> %{text: cluster.reg, lat: cluster.lat, lng: cluster.lng} end)
+    # filter incorrect data
+    |> Enum.reject(fn label -> label.lat == nil or label.lng == nil end)
   end
 end

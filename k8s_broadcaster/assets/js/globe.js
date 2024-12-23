@@ -89,6 +89,7 @@ function initControls(camera, renderer) {
 
 export class Globe {
   constructor(elementId) {
+    this.labels = [];
     this.mouseX = 0;
     this.mouseY = 0;
     this.windowHalfX = window.innerWidth / 2;
@@ -115,6 +116,48 @@ export class Globe {
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(() => this.animate());
+  }
+
+  addLabels(labels) {
+    if ((labels || []) == []) return;
+    this.labels = labels;
+
+    this.globe
+      .labelsData(labels)
+      .labelColor(() => "#00f5d4")
+      .labelSize(2)
+      .labelDotRadius(1.5)
+      .labelText("text");
+  }
+
+  addArcs(startingRegion) {
+    if (!startingRegion) return;
+    const arcsData = [];
+
+    const streamer = this.labels.find((label) => label.text === startingRegion);
+    if (!streamer) return;
+    this.labels.forEach((label) => {
+      if (label != streamer) {
+        arcsData.push({
+          startLat: streamer.lat,
+          startLng: streamer.lng,
+          endLat: label.lat,
+          endLng: label.lng,
+        });
+      }
+    });
+
+    this.globe
+      .arcsData(arcsData)
+      .arcColor(() => "#00f5d4")
+      .arcStroke(0.5)
+      .arcDashLength(0.01)
+      .arcDashGap(0.01)
+      .arcDashAnimateTime(10000);
+  }
+
+  removeArcs() {
+    this.globe.arcsData([]);
   }
 
   #onWindowResize() {

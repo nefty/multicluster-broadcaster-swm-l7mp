@@ -26,6 +26,9 @@ spec:
               value: turn:myregion.broadcaster.stunner.cc:3478?transport=udp
             - name: PHX_HOST
               value: myregion.broadcaster.stunner.cc
+            # this has to be region shortcut from C1, C2, or C3
+            - name: REGION
+              value: myregion-short
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -53,10 +56,10 @@ spec:
             - name: C0
               value: "GLOBAL;https://global.broadcaster.stunner.cc/"
             - name: C1
-              value: "USWEST;https://us-west.broadcaster.stunner.cc/"
+              value: "USWEST;https://us-west.broadcaster.stunner.cc/;45.522896;-122.989830"
             - name: C2
-              value: "GER;https://germany.broadcaster.stunner.cc/"
+              value: "GER;https://germany.broadcaster.stunner.cc/;52.520008;13.404954"
             - name: C3
-              value: "SIN;https://singapore.broadcaster.stunner.cc/"
+              value: "SIN;https://singapore.broadcaster.stunner.cc/;1.290270;103.851959"
             - name: CHECK_ORIGIN
               value: "false"

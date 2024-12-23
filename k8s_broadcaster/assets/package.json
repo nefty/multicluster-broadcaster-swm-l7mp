@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "format": "prettier --write 'js/**/*.js' 'css/**/*.css'"
+  },
   "dependencies": {
     "chart.js": "^4.4.7",
     "three": "^0.171.0",

@@ -24,10 +24,9 @@ summary {
   padding: 5px 0px;
 }
 
-
-input[type=range] {
-  color: #D2CFFD;
-  background-color: #D2CFFD;
+input[type="range"] {
+  color: #d2cffd;
+  background-color: #d2cffd;
   background: #ddd;
   /* Light grey background */
   outline: none;
