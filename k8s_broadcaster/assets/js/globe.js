@@ -80,7 +80,7 @@ function initControls(camera, renderer) {
   controls.maxDistance = 500;
   controls.rotateSpeed = 0.8;
   controls.zoomSpeed = 1;
-  controls.autoRotate = false;
+  controls.autoRotate = true;
 
   controls.minPolarAngle = Math.PI / 3.5;
   controls.maxPolarAngle = Math.PI - Math.PI / 3;
@@ -106,13 +106,6 @@ export class Globe {
   }
 
   animate() {
-    this.camera.position.x +=
-      Math.abs(this.mouseX) <= this.windowHalfX / 2
-        ? (this.mouseX / 2 - this.camera.position.x) * 0.005
-        : 0;
-    this.camera.position.y +=
-      (-this.mouseY / 2 - this.camera.position.y) * 0.005;
-    this.camera.lookAt(this.scene.position);
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(() => this.animate());
