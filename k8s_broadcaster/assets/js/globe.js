@@ -6,10 +6,10 @@ import * as THREE from "three";
 import countries from "./files/globe-data-min.json";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-function initRenderer() {
+function initRenderer(width, height) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(734, 450);
+  renderer.setSize(width, height);
   return renderer;
 }
 
@@ -48,9 +48,9 @@ function initScene(globe, camera) {
   return scene;
 }
 
-function initCamera() {
+function initCamera(width, height) {
   const camera = new THREE.PerspectiveCamera();
-  camera.aspect = 734 / 450;
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
 
   var dLight = new THREE.DirectionalLight(0xffffff, 10);
@@ -89,17 +89,15 @@ function initControls(camera, renderer) {
 
 export class Globe {
   constructor(elementId) {
+    this.element = document.getElementById(elementId);
     this.labels = [];
     this.mouseX = 0;
     this.mouseY = 0;
-    this.windowHalfX = window.innerWidth / 2;
-    this.windowHalfY = window.innerHeight / 2;
-    this.renderer = initRenderer();
+    this.renderer = initRenderer(this.element.offsetWidth, this.element.offsetHeight);
     this.globe = initGlobe();
-    this.camera = initCamera();
+    this.camera = initCamera(this.element.offsetWidth, this.element.offsetHeight);
     this.controls = initControls(this.camera, this.renderer);
     this.scene = initScene(this.globe, this.camera);
-
     document.getElementById(elementId).appendChild(this.renderer.domElement);
 
     window.addEventListener("resize", () => this.#onWindowResize(), false);
@@ -153,10 +151,8 @@ export class Globe {
   }
 
   #onWindowResize() {
-    this.camera.aspect = 734 / 450;
+    this.camera.aspect = this.element.offsetWidth / this.element.offsetHeight;
     this.camera.updateProjectionMatrix();
-    this.windowHalfX = 734 / 1.5;
-    this.windowHalfY = 734 / 1.5;
-    this.renderer.setSize(734, 450);
+    this.renderer.setSize(this.element.offsetWidth, this.element.offsetHeight);
   }
 }
