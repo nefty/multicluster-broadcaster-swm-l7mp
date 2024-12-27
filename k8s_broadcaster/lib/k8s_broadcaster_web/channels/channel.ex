@@ -58,7 +58,9 @@ defmodule K8sBroadcasterWeb.Channel do
     # to be displayed on the globe
     Application.fetch_env!(:k8s_broadcaster, :cluster_info)
     |> Map.take([:c1, :c2, :c3])
-    |> Enum.map(fn {_key, cluster} -> %{text: cluster.reg, lat: cluster.lat, lng: cluster.lng} end)
+    |> Enum.map(fn {_key, cluster} ->
+      %{text: cluster.reg, type: "cluster", lat: cluster.lat, lng: cluster.lng}
+    end)
     # filter incorrect data
     |> Enum.reject(fn label -> label.lat == nil or label.lng == nil end)
   end

@@ -15,7 +15,7 @@ async function connectSignaling(view) {
   view.channel.on("input_added", ({ id: id, region: region }) => {
     console.log("New input:", id);
     view.inputId = id;
-    view.globe.addArcs(region);
+    view.globe.setStreamerRegion(region);
     connectInput(view);
   });
 
@@ -73,7 +73,18 @@ async function connectInput(view) {
     // view.statusMessage.classList.add("hidden");
   };
 
-  view.whepClient.onconnected = () => {
+  view.whepClient.onconnected = async () => {
+    const regionUrl = (view.url || window.location.origin) + "/api/region?resourceId=" + view.whepClient.resourceId;
+    const response = await fetch(regionUrl, {
+      method: "GET",
+      cache: "no-cache"
+    });
+
+    if (response.status === 200) {
+      const region = await response.text();
+      view.globe.setConnectedRegion(region);
+    }
+
     view.packetLossRange.onchange = () => {
       view.packetLossRangeOutput.value = view.packetLossRange.value;
       view.channel.push("packet_loss", {
@@ -568,6 +579,16 @@ export const Home = {
 
     view.globe = new Globe("cluster-view");
     view.globe.animate();
+
+    document.getElementById("localize").onclick = () => {
+      navigator.geolocation.getCurrentPosition((position) => {
+        label = { text: "YOU", type: "client", lat: position.coords.latitude, lng: position.coords.longitude };
+        view.globe.addLabels([label]);
+      });
+    };
+
+
+
     console.log("Started globe animation");
   },
 };

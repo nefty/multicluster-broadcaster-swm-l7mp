@@ -6,4 +6,9 @@ defmodule K8sBroadcaster do
   Contexts are also responsible for managing your data, regardless
   if it comes from the database, an external API or others.
   """
+
+  @spec get_region() :: String.t()
+  def get_region() do
+    Application.fetch_env!(:k8s_broadcaster, :region)
+  end
 end

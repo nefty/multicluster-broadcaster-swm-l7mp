@@ -109,31 +109,75 @@ export class Globe {
     requestAnimationFrame(() => this.animate());
   }
 
+  setConnectedRegion(region) {
+    for (const label of this.labels) {
+      if (label.text.toLowerCase() === region.toLowerCase()) {
+        label.connected = true;
+        break;
+      }
+    }
+
+    this.#updateArcs();
+  }
+
+  setStreamerRegion(region) {
+    for (const label of this.labels) {
+      if (label.text.toLowerCase() === region.toLowerCase()) {
+        label.streamer = true;
+        break;
+      }
+    }
+
+    this.#updateArcs();
+  }
+
   addLabels(labels) {
     if ((labels || []) == []) return;
-    this.labels = labels;
+    this.labels = this.labels.concat(labels);
 
     this.globe
-      .labelsData(labels)
+      .labelsData(this.labels)
       .labelColor(() => "#00f5d4")
       .labelSize(2)
       .labelDotRadius(1.5)
       .labelText("text");
+
+    this.#updateArcs();
   }
 
-  addArcs(startingRegion) {
-    if (!startingRegion) return;
+  #updateArcs() {
     const arcsData = [];
-    const streamer = this.labels.find((label) => label.text.toLowerCase() === startingRegion.toLowerCase());
+
+    const streamer = this.labels.find((label) => label.streamer === true);
+
     if (!streamer) return;
+
+    const client = this.labels.find((label) => label.type === "client");
+
     this.labels.forEach((label) => {
-      if (label != streamer) {
-        arcsData.push({
-          startLat: streamer.lat,
-          startLng: streamer.lng,
-          endLat: label.lat,
-          endLng: label.lng,
-        });
+      if (label.type !== "client") {
+
+        // draw an arc from the streamer to a casual cluster
+        if (!label.streamer) {
+          arcsData.push({
+            startLat: streamer.lat,
+            startLng: streamer.lng,
+            endLat: label.lat,
+            endLng: label.lng,
+          });
+        }
+
+        // if this is the label we are connected to and there is 
+        // a label corresponding to our localization (client),
+        // draw an arc from this label to us
+        if (label.connected === true && client) {
+          arcsData.push({
+            startLat: label.lat,
+            startLng: label.lng,
+            endLat: client.lat,
+            endLng: client.lng
+          })
+        }
       }
     });
 

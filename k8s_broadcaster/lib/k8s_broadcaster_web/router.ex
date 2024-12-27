@@ -24,6 +24,7 @@ defmodule K8sBroadcasterWeb.Router do
 
   scope "/api", K8sBroadcasterWeb do
     get "/pc-config", MediaController, :pc_config
+    get "/region", MediaController, :region
     post "/whip", MediaController, :whip
     post "/whep", MediaController, :whep
 

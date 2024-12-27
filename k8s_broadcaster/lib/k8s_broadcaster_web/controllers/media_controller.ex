@@ -24,6 +24,22 @@ defmodule K8sBroadcasterWeb.MediaController do
     |> send_resp()
   end
 
+  def region(conn, %{"resourceId" => resource_id}) do
+    case PeerSupervisor.fetch_pid(resource_id) do
+      {:ok, pid} ->
+        region = :erpc.call(node(pid), K8sBroadcaster, :get_region, []) || ""
+
+        conn
+        |> resp(200, region)
+        |> send_resp()
+
+      _ ->
+        conn
+        |> resp(404, "Resource id not found")
+        |> send_resp()
+    end
+  end
+
   # TODO: use proper statuses in case of error
   def whip(conn, _params) do
     with :ok <- authenticate(conn),
@@ -65,7 +81,6 @@ defmodule K8sBroadcasterWeb.MediaController do
       |> resp(201, answer_sdp)
     else
       other ->
-        dbg(other)
         resp(conn, 400, "Bad request")
     end
     |> send_resp()
