@@ -587,6 +587,12 @@ export const Home = {
       });
     };
 
+    document.getElementById("rotate").onclick = () => {
+      console.log(view.globe.controls.autoRotate);
+      view.globe.controls.autoRotate = !view.globe.controls.autoRotate;
+    };
+
+
 
 
     console.log("Started globe animation");

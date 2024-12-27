@@ -110,6 +110,8 @@ export class Globe {
   }
 
   setConnectedRegion(region) {
+    if (!region) return;
+
     for (const label of this.labels) {
       if (label.text.toLowerCase() === region.toLowerCase()) {
         label.connected = true;
@@ -121,6 +123,8 @@ export class Globe {
   }
 
   setStreamerRegion(region) {
+    if (!region) return;
+
     for (const label of this.labels) {
       if (label.text.toLowerCase() === region.toLowerCase()) {
         label.streamer = true;
