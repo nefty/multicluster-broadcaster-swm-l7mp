@@ -61,7 +61,7 @@ defmodule K8sBroadcasterWeb.MediaController do
     # with custom configuration options.
     decode_body = fn body ->
       case Jason.decode(body) do
-        {:ok, %{"sdp" => offer_sdp, "rtx" => rtx}} = ret -> ret
+        {:ok, %{"sdp" => _offer_sdp, "rtx" => _rtx}} = ret -> ret
         _ -> {:ok, %{"sdp" => body, "rtx" => true}}
       end
     end
@@ -80,7 +80,7 @@ defmodule K8sBroadcasterWeb.MediaController do
       |> put_resp_content_type("application/sdp")
       |> resp(201, answer_sdp)
     else
-      other ->
+      _other ->
         resp(conn, 400, "Bad request")
     end
     |> send_resp()
