@@ -136,8 +136,19 @@ export class Globe {
   }
 
   addLabels(labels) {
-    if ((labels || []) == []) return;
-    this.labels = this.labels.concat(labels);
+    labels.forEach((label) => {
+      const idx = this.labels.findIndex(
+        (l) => l.lat === label.lat && l.lng === label.lng
+      );
+
+      // If there already is a label with the same lat and lng, replace it.
+      // If there isn't, push it to the array of labels.
+      if (idx === -1) {
+        this.labels.push(label);
+      } else {
+        this.labels[idx] = label;
+      }
+    });
 
     this.globe
       .labelsData(this.labels)
