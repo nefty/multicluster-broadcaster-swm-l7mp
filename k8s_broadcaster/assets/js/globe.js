@@ -93,9 +93,15 @@ export class Globe {
     this.labels = [];
     this.mouseX = 0;
     this.mouseY = 0;
-    this.renderer = initRenderer(this.element.offsetWidth, this.element.offsetHeight);
+    this.renderer = initRenderer(
+      this.element.offsetWidth,
+      this.element.offsetHeight
+    );
     this.globe = initGlobe();
-    this.camera = initCamera(this.element.offsetWidth, this.element.offsetHeight);
+    this.camera = initCamera(
+      this.element.offsetWidth,
+      this.element.offsetHeight
+    );
     this.controls = initControls(this.camera, this.renderer);
     this.scene = initScene(this.globe, this.camera);
     document.getElementById(elementId).appendChild(this.renderer.domElement);
@@ -162,7 +168,6 @@ export class Globe {
 
   #updateArcs() {
     const arcsData = [];
-
     const streamer = this.labels.find((label) => label.streamer === true);
 
     if (!streamer) return;
@@ -171,27 +176,61 @@ export class Globe {
 
     this.labels.forEach((label) => {
       if (label.type !== "client") {
-
         // draw an arc from the streamer to a casual cluster
         if (!label.streamer) {
-          arcsData.push({
+          const arc = {
             startLat: streamer.lat,
             startLng: streamer.lng,
             endLat: label.lat,
             endLng: label.lng,
-          });
+          };
+
+          const idx = this.globe
+            .arcsData()
+            .findIndex(
+              (a) =>
+                a.startLat === arc.startLat &&
+                a.startLng === arc.startLng &&
+                a.endLat === arc.endLat &&
+                a.endLng === arc.endLng
+            );
+
+          // Push an arc only if it does not already exist.
+          // Otherwise, use already existing arc.
+          // This prevents from re-animating arc creation.
+          if (idx === -1) {
+            arcsData.push(arc);
+          } else {
+            arcsData.push(this.globe.arcsData()[idx]);
+          }
         }
 
-        // if this is the label we are connected to and there is 
+        // if this is the label we are connected to and there is
         // a label corresponding to our localization (client),
         // draw an arc from this label to us
         if (label.connected === true && client) {
-          arcsData.push({
+          const arc = {
             startLat: label.lat,
             startLng: label.lng,
             endLat: client.lat,
-            endLng: client.lng
-          })
+            endLng: client.lng,
+          };
+
+          const idx = this.globe
+            .arcsData()
+            .findIndex(
+              (a) =>
+                a.startLat === arc.startLat &&
+                a.startLng === arc.startLng &&
+                a.endLat === arc.endLat &&
+                a.endLng === arc.endLng
+            );
+
+          if (idx === -1) {
+            arcsData.push(arc);
+          } else {
+            arcsData.push(this.globe.arcsData()[idx]);
+          }
         }
       }
     });
