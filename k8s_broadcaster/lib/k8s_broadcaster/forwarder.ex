@@ -459,8 +459,10 @@ defmodule K8sBroadcaster.Forwarder do
 
     Logger.info("Output #{inspect(pc)} has successfully connected")
 
-    # We don't send a PLI on behalf of the newly connected output.
-    # Once the remote end sends a PLI to us, we'll forward it.
+    # Send a PLI so that the newly joined peer can decode and play the stream.
+    # We could wait until the remote side sends PLI, but it seems that
+    # not everyone does this (e.g. gstreamer).
+    PeerConnection.send_pli(input.pc, input.video, output.layer)
 
     put_in(state, [:outputs, pc], output)
   end
