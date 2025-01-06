@@ -74,10 +74,13 @@ async function connectInput(view) {
   };
 
   view.whepClient.onconnected = async () => {
-    const regionUrl = (view.url || window.location.origin) + "/api/region?resourceId=" + view.whepClient.resourceId;
+    const regionUrl =
+      (view.url || window.location.origin) +
+      "/api/region?resourceId=" +
+      view.whepClient.resourceId;
     const response = await fetch(regionUrl, {
       method: "GET",
-      cache: "no-cache"
+      cache: "no-cache",
     });
 
     if (response.status === 200) {
@@ -355,7 +358,7 @@ function updatePacketLoss(view) {
   const timestamp = toXLabel(
     new Date(
       view.stats.lastAudioReport.timestamp ||
-      view.stats.lastVideoReport.timestamp
+        view.stats.lastVideoReport.timestamp
     )
   );
   view.stats.packetLoss.innerText = packetLoss;
@@ -395,6 +398,7 @@ function buttonOnClick(view, button) {
   view.url = button.value;
   resetButtons(view);
   colorButton(button);
+  view.globe.setConnectedRegion(null);
   connectInput(view);
 }
 
@@ -582,7 +586,12 @@ export const Home = {
 
     document.getElementById("localize").onclick = () => {
       navigator.geolocation.getCurrentPosition((position) => {
-        label = { text: "YOU", type: "client", lat: position.coords.latitude, lng: position.coords.longitude };
+        label = {
+          text: "YOU",
+          type: "client",
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
         view.globe.addLabels([label]);
       });
     };
@@ -591,9 +600,6 @@ export const Home = {
       console.log(view.globe.controls.autoRotate);
       view.globe.controls.autoRotate = !view.globe.controls.autoRotate;
     };
-
-
-
 
     console.log("Started globe animation");
   },

@@ -116,12 +116,12 @@ export class Globe {
   }
 
   setConnectedRegion(region) {
-    if (!region) return;
-
     for (const label of this.labels) {
-      if (label.text.toLowerCase() === region.toLowerCase()) {
+      if (region && label.text.toLowerCase() === region.toLowerCase()) {
         label.connected = true;
         break;
+      } else {
+        label.connected = false;
       }
     }
 
