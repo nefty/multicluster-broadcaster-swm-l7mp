@@ -51,7 +51,7 @@ spec:
             - name: WHIP_TOKEN
               value: token
             - name: C0
-              value: "GLOBAL;https://global.broadcaster.stunner.cc/"
+              value: "GLOBAL;https://global.broadcaster.stunner.cc/;0;0"
             - name: C1
               value: "US-WEST;https://us-west.broadcaster.stunner.cc/;45.522896;-122.989830"
             - name: C2
