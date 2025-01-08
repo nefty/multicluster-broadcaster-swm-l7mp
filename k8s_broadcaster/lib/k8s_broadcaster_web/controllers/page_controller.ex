@@ -23,22 +23,13 @@ defmodule K8sBroadcasterWeb.PageController do
           args: [Path.join(:code.priv_dir(:k8s_broadcaster), "headless_client.js")],
           env: [
             {~c"TOKEN", String.to_charlist(whip_token)},
-            {~c"URL", String.to_charlist("#{conn.scheme}://#{conn.host}:#{conn.port}")}
+            {~c"URL", String.to_charlist("#{conn.scheme}://#{conn.host}:#{conn.port}") |> dbg()}
           ]
         )
 
       Port.monitor(port)
 
-      receive do
-        :exit ->
-          {:os_pid, os_pid} = Port.info(port, :os_pid)
-          Logger.info("Closing headless client")
-          # For some reason, doing Port.close does not work
-          System.shell("kill #{os_pid}")
-
-        {:DOWN, _ref, :port, _, reason} ->
-          Logger.info("Headless client exited with reason: #{inspect(reason)}")
-      end
+      stream_receive(port)
     end)
 
     conn
@@ -55,5 +46,22 @@ defmodule K8sBroadcasterWeb.PageController do
     conn
     |> resp(201, "")
     |> send_resp()
+  end
+
+  defp stream_receive(port) do
+    receive do
+      :exit ->
+        {:os_pid, os_pid} = Port.info(port, :os_pid)
+        Logger.info("Closing headless client")
+        # For some reason, doing Port.close does not work
+        System.shell("kill #{os_pid}")
+
+      {:DOWN, _ref, :port, _, reason} ->
+        Logger.info("Headless client exited with reason: #{inspect(reason)}")
+
+      other ->
+        dbg(other)
+        stream_receive(port)
+    end
   end
 end

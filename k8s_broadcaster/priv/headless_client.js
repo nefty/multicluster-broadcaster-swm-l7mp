@@ -6,6 +6,8 @@ const url =
   process.env.URL === undefined ? "http://localhost:4000" : process.env.URL;
 const token = process.env.TOKEN === undefined ? "example" : process.env.TOKEN;
 
+console.log(url);
+
 async function stream(url, token) {
   console.log("Starting new stream...");
   let response;
@@ -47,6 +49,9 @@ async function stream(url, token) {
 
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
+
+  console.log(url);
+  console.log(window.location.origin);
 
   response = await fetch(`${url}/api/whip`, {
     method: "POST",
