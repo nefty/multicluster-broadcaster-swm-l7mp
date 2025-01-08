@@ -12,8 +12,12 @@ defmodule K8sBroadcasterWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :auth do
-    plug :admin_auth
+  pipeline :admin_auth do
+    plug :authenticate_admin
+  end
+
+  pipeline :api_auth do
+    plug :authenticate_api
   end
 
   scope "/", K8sBroadcasterWeb do
@@ -25,7 +29,6 @@ defmodule K8sBroadcasterWeb.Router do
   scope "/api", K8sBroadcasterWeb do
     get "/pc-config", MediaController, :pc_config
     get "/region", MediaController, :region
-    post "/whip", MediaController, :whip
     post "/whep", MediaController, :whep
 
     scope "/resource/:resource_id" do
@@ -37,13 +40,19 @@ defmodule K8sBroadcasterWeb.Router do
     end
   end
 
+  scope "/api", K8sBroadcasterWeb do
+    pipe_through :api_auth
+
+    post "/whip", MediaController, :whip
+    post "/server-stream", PageController, :start_server_stream
+    delete "/server-stream", PageController, :stop_server_stream
+  end
+
   scope "/admin", K8sBroadcasterWeb do
-    pipe_through :auth
+    pipe_through :admin_auth
     pipe_through :browser
 
     get "/panel", PageController, :panel
-    post "/server-stream", PageController, :start_server_stream
-    delete "/server-stream", PageController, :stop_server_stream
 
     live_dashboard "/dashboard",
       metrics: K8sBroadcasterWeb.Telemetry,
@@ -52,7 +61,18 @@ defmodule K8sBroadcasterWeb.Router do
 
   def cors_expose_headers, do: K8sBroadcasterWeb.MediaController.cors_expose_headers()
 
-  defp admin_auth(conn, _opts) do
+  defp authenticate_api(conn, _opts) do
+    valid_token = Application.fetch_env!(:k8s_broadcaster, :whip_token)
+
+    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
+         true <- token == valid_token do
+      conn
+    else
+      _other -> resp(conn, 401, "Unauthorized") |> halt()
+    end
+  end
+
+  defp authenticate_admin(conn, _opts) do
     username = Application.fetch_env!(:k8s_broadcaster, :admin_username)
     password = Application.fetch_env!(:k8s_broadcaster, :admin_password)
     Plug.BasicAuth.basic_auth(conn, username: username, password: password)

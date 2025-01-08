@@ -42,8 +42,7 @@ defmodule K8sBroadcasterWeb.MediaController do
 
   # TODO: use proper statuses in case of error
   def whip(conn, _params) do
-    with :ok <- authenticate(conn),
-         {:ok, offer_sdp, conn} <- read_body(conn),
+    with {:ok, offer_sdp, conn} <- read_body(conn),
          {:ok, pc, pc_id, answer_sdp} <- PeerSupervisor.start_whip(offer_sdp),
          :ok <- Forwarder.connect_input(pc, pc_id) do
       conn
@@ -148,17 +147,6 @@ defmodule K8sBroadcasterWeb.MediaController do
         resp(conn, 400, "Bad request")
     end
     |> send_resp()
-  end
-
-  defp authenticate(conn) do
-    valid_token = Application.fetch_env!(:k8s_broadcaster, :whip_token)
-
-    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
-         true <- token == valid_token do
-      :ok
-    else
-      _other -> {:error, :unauthorized}
-    end
   end
 
   defp update_layers(conn) do

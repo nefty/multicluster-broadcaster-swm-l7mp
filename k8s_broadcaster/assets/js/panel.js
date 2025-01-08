@@ -356,14 +356,12 @@ function stopStreaming() {
 }
 
 async function startServerStreaming() {
-  const serverStreamUrl = "/admin/server-stream";
+  const serverStreamUrl = "/api/server-stream";
   const response = await fetch(serverStreamUrl, {
     method: "POST",
     cache: "no-cache",
     headers: {
-      "X-CSRF-TOKEN": document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute("content"),
+      Authorization: `Bearer ${serverToken.value}`,
     },
   });
 
@@ -377,14 +375,12 @@ async function startServerStreaming() {
 }
 
 async function stopServerStreaming() {
-  const serverStreamUrl = "/admin/server-stream";
+  const serverStreamUrl = "/api/server-stream";
   const response = await fetch(serverStreamUrl, {
     method: "DELETE",
     cache: "no-cache",
     headers: {
-      "X-CSRF-TOKEN": document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute("content"),
+      Authorization: `Bearer ${serverToken.value}`,
     },
   });
 
