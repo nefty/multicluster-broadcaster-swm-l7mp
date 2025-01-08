@@ -79,7 +79,18 @@ RUN echo "Building for $TARGETPLATFORM"
 
 RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates nodejs npm
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then apt-get install -y libsrtp2-dev; fi
-RUN apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+# Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
+# Note: this installs the necessary libs to make the bundled version of Chrome for Testing that Puppeteer
+# installs, work.
+RUN apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+      --no-install-recommends
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
@@ -89,7 +100,7 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 # Puppeteer needs home directory to insall there a web browser.
-# Alternatively, we could configure puppeteer install location
+# Alternatively, we could try to configure puppeteer install location
 # or install chromium or chrome manually and configure puppeteer to use it instead. 
 RUN useradd -m k8sbroadcaster
 WORKDIR "/app"
@@ -99,11 +110,13 @@ RUN chown k8sbroadcaster /app
 ENV MIX_ENV="prod"
 
 # copy the final release from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/k8s_broadcaster ./
+COPY --from=builder --chown=k8sbroadcaster:k8sbroadcaster /app/_build/${MIX_ENV}/rel/k8s_broadcaster ./
 
 USER k8sbroadcaster
 
 # install puppeteer for headless client
+# we do this as k8sbroadcaster as puppeteer will create .cache 
+# directory in the home directory and download there chrome binary
 RUN npm install puppeteer
 
 # If using an environment that doesn't automatically reap zombie processes, it is
