@@ -14,26 +14,13 @@ defmodule K8sBroadcasterWeb.PageController do
   def start_server_stream(conn, _params) do
     whip_token = Application.fetch_env!(:k8s_broadcaster, :whip_token)
 
-    Task.Supervisor.start_child(K8sBroadcaster.TaskSupervisor, fn ->
-      Logger.info("Starting headless client")
-
-      port =
-        Port.open(
-          {:spawn_executable, System.find_executable("node")},
-          [
-            :binary,
-            args: [Path.join(:code.priv_dir(:k8s_broadcaster), "headless_client.js")],
-            env: [
-              {~c"TOKEN", String.to_charlist(whip_token)},
-              {~c"URL", String.to_charlist("#{conn.scheme}://#{conn.host}:#{conn.port}") |> dbg()}
-            ]
-          ]
-        )
-
-      Port.monitor(port)
-
-      stream_receive(port)
-    end)
+    {:ok, _pid} =
+      Task.Supervisor.start_child(
+        K8sBroadcaster.TaskSupervisor,
+        K8sBroadcaster.ServerStreamTask,
+        :start,
+        [conn, whip_token]
+      )
 
     conn
     |> resp(201, "")
@@ -41,30 +28,12 @@ defmodule K8sBroadcasterWeb.PageController do
   end
 
   def stop_server_stream(conn, _params) do
-    Task.Supervisor.children(K8sBroadcaster.TaskSupervisor)
-    |> Enum.each(fn pid ->
-      send(pid, :exit)
-    end)
+    K8sBroadcaster.TaskSupervisor
+    |> Task.Supervisor.children()
+    |> Enum.each(fn pid -> K8sBroadcaster.ServerStreamTask.stop(pid) end)
 
     conn
     |> resp(201, "")
     |> send_resp()
-  end
-
-  defp stream_receive(port) do
-    receive do
-      :exit ->
-        {:os_pid, os_pid} = Port.info(port, :os_pid)
-        Logger.info("Closing headless client")
-        # For some reason, doing Port.close does not work
-        System.shell("kill #{os_pid}")
-
-      {:DOWN, _ref, :port, _, reason} ->
-        Logger.info("Headless client exited with reason: #{inspect(reason)}")
-
-      {^port, {:data, data}} ->
-        Logger.info(String.trim("[Headless client]: #{data}"))
-        stream_receive(port)
-    end
   end
 end
