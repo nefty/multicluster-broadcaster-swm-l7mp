@@ -35,7 +35,8 @@ defmodule K8sBroadcaster.Application do
         K8sBroadcaster.PeerSupervisor,
         K8sBroadcaster.Forwarder,
         K8sBroadcasterWeb.Endpoint,
-        K8sBroadcasterWeb.Presence
+        K8sBroadcasterWeb.Presence,
+        {Task.Supervisor, name: K8sBroadcaster.TaskSupervisor}
       ]
       |> Enum.reject(&is_nil(&1))
 

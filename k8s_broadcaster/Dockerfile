@@ -77,7 +77,7 @@ FROM ${RUNNER_IMAGE}
 ARG TARGETPLATFORM
 RUN echo "Building for $TARGETPLATFORM"
 
-RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates
+RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates nodejs npm
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then apt-get install -y libsrtp2-dev; fi
 RUN apt-get clean && rm -f /var/lib/apt/lists/*_*
 
@@ -88,16 +88,23 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
+# Puppeteer needs home directory to insall there a web browser.
+# Alternatively, we could configure puppeteer install location
+# or install chromium or chrome manually and configure puppeteer to use it instead. 
+RUN useradd -m k8sbroadcaster
 WORKDIR "/app"
-RUN chown nobody /app
+RUN chown k8sbroadcaster /app
 
 # set runner ENV
 ENV MIX_ENV="prod"
 
-# Only copy the final release from the build stage
+# copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/k8s_broadcaster ./
 
-USER nobody
+USER k8sbroadcaster
+
+# install puppeteer for headless client
+RUN npm install puppeteer
 
 # If using an environment that doesn't automatically reap zombie processes, it is
 # advised to add an init process such as tini via `apt-get install`

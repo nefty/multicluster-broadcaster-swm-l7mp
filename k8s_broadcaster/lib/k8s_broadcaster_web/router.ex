@@ -42,6 +42,8 @@ defmodule K8sBroadcasterWeb.Router do
     pipe_through :browser
 
     get "/panel", PageController, :panel
+    post "/server-stream", PageController, :start_server_stream
+    delete "/server-stream", PageController, :stop_server_stream
 
     live_dashboard "/dashboard",
       metrics: K8sBroadcasterWeb.Telemetry,

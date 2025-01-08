@@ -1,25 +1,26 @@
-import { Socket } from 'phoenix';
+import { Socket } from "phoenix";
 
-const audioDevices = document.getElementById('audioDevices');
-const videoDevices = document.getElementById('videoDevices');
-const serverUrl = document.getElementById('serverUrl');
-const serverToken = document.getElementById('serverToken');
-const button = document.getElementById('button');
-const previewPlayer = document.getElementById('previewPlayer');
-const highVideoBitrate = document.getElementById('highVideoBitrate');
-const mediumVideoBitrate = document.getElementById('mediumVideoBitrate');
-const lowVideoBitrate = document.getElementById('lowVideoBitrate');
-const echoCancellation = document.getElementById('echoCancellation');
-const autoGainControl = document.getElementById('autoGainControl');
-const noiseSuppression = document.getElementById('noiseSuppression');
-const saveAudioConfigButton = document.getElementById('save-audio-config');
+const audioDevices = document.getElementById("audioDevices");
+const videoDevices = document.getElementById("videoDevices");
+const serverUrl = document.getElementById("serverUrl");
+const serverToken = document.getElementById("serverToken");
+const button = document.getElementById("button");
+const serverStreamButton = document.getElementById("infinite-stream-button");
+const previewPlayer = document.getElementById("previewPlayer");
+const highVideoBitrate = document.getElementById("highVideoBitrate");
+const mediumVideoBitrate = document.getElementById("mediumVideoBitrate");
+const lowVideoBitrate = document.getElementById("lowVideoBitrate");
+const echoCancellation = document.getElementById("echoCancellation");
+const autoGainControl = document.getElementById("autoGainControl");
+const noiseSuppression = document.getElementById("noiseSuppression");
+const saveAudioConfigButton = document.getElementById("save-audio-config");
 
-const audioBitrate = document.getElementById('audio-bitrate');
-const videoBitrate = document.getElementById('video-bitrate');
-const packetLoss = document.getElementById('packet-loss');
-const time = document.getElementById('time');
-const statusOff = document.getElementById('status-off');
-const statusOn = document.getElementById('status-on');
+const audioBitrate = document.getElementById("audio-bitrate");
+const videoBitrate = document.getElementById("video-bitrate");
+const packetLoss = document.getElementById("packet-loss");
+const time = document.getElementById("time");
+const statusOff = document.getElementById("status-off");
+const statusOn = document.getElementById("status-on");
 
 let lastAudioReport = undefined;
 let lastVideoReport = undefined;
@@ -38,15 +39,13 @@ const mediaConstraints = {
 let localStream = undefined;
 let pc = undefined;
 
-
 let pcConfig;
-const pcConfigData = document.body.getAttribute('data-pcConfig');
+const pcConfigData = document.body.getAttribute("data-pcConfig");
 if (pcConfigData) {
   pcConfig = JSON.parse(pcConfigData);
 } else {
   pcConfig = {};
 }
-
 
 async function setupStream() {
   if (localStream != undefined) {
@@ -91,6 +90,7 @@ function bindControls() {
   audioDevices.onchange = setupStream;
   videoDevices.onchange = setupStream;
   button.onclick = startStreaming;
+  serverStreamButton.onclick = startServerStreaming;
 }
 
 function disableControls() {
@@ -124,23 +124,23 @@ function enableControls() {
 async function startStreaming() {
   disableControls();
 
-  const pcConfigUrl = window.location.origin + '/api/pc-config'
+  const pcConfigUrl = window.location.origin + "/api/pc-config";
   const response = await fetch(pcConfigUrl, {
-    method: 'GET',
-    cache: 'no-cache',
+    method: "GET",
+    cache: "no-cache",
   });
   const pcConfig = await response.json();
-  console.log('Fetched PC config from server: ', pcConfig)
+  console.log("Fetched PC config from server: ", pcConfig);
 
   const candidates = [];
   let patchEndpoint = undefined;
   pc = new RTCPeerConnection(pcConfig);
 
   pc.onicegatheringstatechange = () =>
-    console.log('Gathering state change:', pc.iceGatheringState);
+    console.log("Gathering state change:", pc.iceGatheringState);
   pc.onconnectionstatechange = () => {
-    console.log('Connection state change:', pc.connectionState);
-    if (pc.connectionState === 'connected') {
+    console.log("Connection state change:", pc.connectionState);
+    if (pc.connectionState === "connected") {
       startTime = new Date();
       setStatusIcon(true);
 
@@ -165,7 +165,7 @@ async function startStreaming() {
         };
 
         stats.forEach((report) => {
-          if (report.type === 'outbound-rtp' && report.kind === 'video') {
+          if (report.type === "outbound-rtp" && report.kind === "video") {
             videoReport.timestamp = report.timestamp;
             videoReport.bytesSent += report.bytesSent;
             videoReport.packetsSent += report.packetsSent;
@@ -173,8 +173,8 @@ async function startStreaming() {
               report.retransmittedPacketsSent;
             videoReport.nackCount += report.nackCount;
           } else if (
-            report.type === 'outbound-rtp' &&
-            report.kind === 'audio'
+            report.type === "outbound-rtp" &&
+            report.kind === "audio"
           ) {
             audioReport = report;
           }
@@ -240,10 +240,10 @@ async function startStreaming() {
           }
         }
       }, 1000);
-    } else if (pc.connectionState === 'disconnected') {
-      console.warn('Peer connection state changed to `disconnected`');
-    } else if (pc.connectionState === 'failed') {
-      console.error('Peer connection state changed to `failed`');
+    } else if (pc.connectionState === "disconnected") {
+      console.warn("Peer connection state changed to `disconnected`");
+    } else if (pc.connectionState === "failed") {
+      console.error("Peer connection state changed to `failed`");
       stopStreaming();
     }
   };
@@ -267,20 +267,20 @@ async function startStreaming() {
     {
       streams: [localStream],
       sendEncodings: [
-        { rid: 'h', maxBitrate: 1500 * 1024 },
-        { rid: 'm', scaleResolutionDownBy: 2, maxBitrate: 600 * 1024 },
-        { rid: 'l', scaleResolutionDownBy: 4, maxBitrate: 300 * 1024 },
+        { rid: "h", maxBitrate: 1500 * 1024 },
+        { rid: "m", scaleResolutionDownBy: 2, maxBitrate: 600 * 1024 },
+        { rid: "l", scaleResolutionDownBy: 4, maxBitrate: 300 * 1024 },
       ],
     }
   );
 
   // limit max bitrate
   const params = videoSender.getParameters();
-  params.encodings.find((e) => e.rid === 'h').maxBitrate =
+  params.encodings.find((e) => e.rid === "h").maxBitrate =
     parseInt(highVideoBitrate.value) * 1024;
-  params.encodings.find((e) => e.rid === 'm').maxBitrate =
+  params.encodings.find((e) => e.rid === "m").maxBitrate =
     parseInt(mediumVideoBitrate.value) * 1024;
-  params.encodings.find((e) => e.rid === 'l').maxBitrate =
+  params.encodings.find((e) => e.rid === "l").maxBitrate =
     parseInt(lowVideoBitrate.value) * 1024;
   await videoSender.setParameters(params);
 
@@ -289,30 +289,30 @@ async function startStreaming() {
 
   try {
     const response = await fetch(serverUrl.value, {
-      method: 'POST',
-      cache: 'no-cache',
+      method: "POST",
+      cache: "no-cache",
       headers: {
-        Accept: 'application/sdp',
-        'Content-Type': 'application/sdp',
+        Accept: "application/sdp",
+        "Content-Type": "application/sdp",
         Authorization: `Bearer ${serverToken.value}`,
       },
       body: offer.sdp,
     });
 
     if (response.status == 201) {
-      patchEndpoint = response.headers.get('location');
-      console.log('Successfully initialized WHIP connection');
+      patchEndpoint = response.headers.get("location");
+      console.log("Successfully initialized WHIP connection");
 
       for (const candidate of candidates) {
         sendCandidate(patchEndpoint, candidate);
       }
 
       const sdp = await response.text();
-      await pc.setRemoteDescription({ type: 'answer', sdp: sdp });
-      button.innerText = 'Stop Streaming';
+      await pc.setRemoteDescription({ type: "answer", sdp: sdp });
+      button.innerText = "Stop Streaming";
       button.onclick = stopStreaming;
     } else {
-      console.error('Request to server failed with response:', response);
+      console.error("Request to server failed with response:", response);
       pc.close();
       pc = undefined;
       enableControls();
@@ -327,10 +327,10 @@ async function startStreaming() {
 
 async function sendCandidate(patchEndpoint, candidate) {
   const response = await fetch(patchEndpoint, {
-    method: 'PATCH',
-    cache: 'no-cache',
+    method: "PATCH",
+    cache: "no-cache",
     headers: {
-      'Content-Type': 'application/trickle-ice-sdpfrag',
+      "Content-Type": "application/trickle-ice-sdpfrag",
     },
     body: candidate,
   });
@@ -351,8 +351,50 @@ function stopStreaming() {
   resetStats();
   enableControls();
 
-  button.innerText = 'Start Streaming';
+  button.innerText = "Start Streaming";
   button.onclick = startStreaming;
+}
+
+async function startServerStreaming() {
+  const serverStreamUrl = "/admin/server-stream";
+  const response = await fetch(serverStreamUrl, {
+    method: "POST",
+    cache: "no-cache",
+    headers: {
+      "X-CSRF-TOKEN": document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content"),
+    },
+  });
+
+  if (response.status === 201) {
+    console.log(`Successfully start server side streaming`);
+    serverStreamButton.onclick = stopServerStreaming;
+    serverStreamButton.innerText = "Stop server infinite stream";
+  } else {
+    console.error(`Failed to start server side streaming`);
+  }
+}
+
+async function stopServerStreaming() {
+  const serverStreamUrl = "/admin/server-stream";
+  const response = await fetch(serverStreamUrl, {
+    method: "DELETE",
+    cache: "no-cache",
+    headers: {
+      "X-CSRF-TOKEN": document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content"),
+    },
+  });
+
+  if (response.status === 201) {
+    console.log(`Successfully stopped server side streaming`);
+    serverStreamButton.onclick = startServerStreaming;
+    serverStreamButton.innerText = "Start server infinite stream";
+  } else {
+    console.error(`Failed to stop server side streaming`);
+  }
 }
 
 function resetStats() {
@@ -362,7 +404,7 @@ function resetStats() {
   audioBitrate.innerText = 0;
   videoBitrate.innerText = 0;
   packetLoss.innerText = 0;
-  time.innerText = '00:00:00';
+  time.innerText = "00:00:00";
   setStatusIcon(false);
 }
 
@@ -375,20 +417,20 @@ function toHHMMSS(milliseconds) {
   let seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
 
   // Formatting each unit to always have at least two digits
-  hours = hours < 10 ? '0' + hours : hours;
-  minutes = minutes < 10 ? '0' + minutes : minutes;
-  seconds = seconds < 10 ? '0' + seconds : seconds;
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
 
-  return hours + ':' + minutes + ':' + seconds;
+  return hours + ":" + minutes + ":" + seconds;
 }
 
 function setStatusIcon(isOn) {
   if (isOn) {
-    statusOff.classList.add('hidden');
-    statusOn.classList.remove('hidden');
+    statusOff.classList.add("hidden");
+    statusOn.classList.remove("hidden");
   } else {
-    statusOn.classList.add('hidden');
-    statusOff.classList.remove('hidden');
+    statusOn.classList.add("hidden");
+    statusOff.classList.remove("hidden");
   }
 }
 
@@ -401,12 +443,12 @@ async function run() {
   // enumerate devices
   const devices = await navigator.mediaDevices.enumerateDevices();
   devices.forEach((device) => {
-    if (device.kind === 'videoinput') {
+    if (device.kind === "videoinput") {
       videoDevices.options[videoDevices.options.length] = new Option(
         device.label,
         device.deviceId
       );
-    } else if (device.kind === 'audioinput') {
+    } else if (device.kind === "audioinput") {
       audioDevices.options[audioDevices.options.length] = new Option(
         device.label,
         device.deviceId
@@ -427,7 +469,7 @@ async function run() {
 
 export const Panel = {
   mounted() {
-    const socket = new Socket('/socket', {
+    const socket = new Socket("/socket", {
       params: { token: window.userToken },
     });
     socket.connect();
