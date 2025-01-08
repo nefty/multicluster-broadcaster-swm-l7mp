@@ -6,9 +6,7 @@ const url =
   process.env.URL === undefined ? "http://localhost:4000" : process.env.URL;
 const token = process.env.TOKEN === undefined ? "example" : process.env.TOKEN;
 
-console.log(url);
-
-async function stream(url, token) {
+async function stream(token) {
   console.log("Starting new stream...");
   let response;
 
@@ -21,8 +19,7 @@ async function stream(url, token) {
     audio: true,
   });
 
-  const pcConfigUrl = window.location.origin + "/api/pc-config";
-  response = await fetch(pcConfigUrl, {
+  response = await fetch("/api/pc-config", {
     method: "GET",
     cache: "no-cache",
   });
@@ -33,7 +30,7 @@ async function stream(url, token) {
   pc.onconnectionstatechange = async (_) => {
     console.log("Connection state changed:", pc.connectionState);
     if (pc.connectionState === "failed") {
-      stream(url, token);
+      stream(token);
     }
   };
 
@@ -50,10 +47,7 @@ async function stream(url, token) {
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
 
-  console.log(url);
-  console.log(window.location.origin);
-
-  response = await fetch(`${url}/api/whip`, {
+  response = await fetch("/api/whip", {
     method: "POST",
     cache: "no-cache",
     headers: {
@@ -87,10 +81,14 @@ async function start() {
     const page = await browser.newPage();
     page.on("console", (msg) => console.log("Page log:", msg.text()));
 
-    // we need a page with secure context in order to access userMedia
+    // We need a page with secure context in order to access userMedia.
+    // Note: this might cause a redirect. E.g. when we are behind proxy,
+    // url passed by env var, will be http://example.com:80, but we will
+    // be redirected to https://example.com:443.
+    // Because of that, we implicitly rely on window.location.origin later on.
     await page.goto(`${url}/notfound`);
 
-    await page.evaluate(stream, url, token);
+    await page.evaluate(stream, token);
   } catch (err) {
     console.error("Browser error occured:", err);
     if (browser) await browser.close();

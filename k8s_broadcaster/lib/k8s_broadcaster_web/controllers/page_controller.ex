@@ -20,10 +20,13 @@ defmodule K8sBroadcasterWeb.PageController do
       port =
         Port.open(
           {:spawn_executable, System.find_executable("node")},
-          args: [Path.join(:code.priv_dir(:k8s_broadcaster), "headless_client.js")],
-          env: [
-            {~c"TOKEN", String.to_charlist(whip_token)},
-            {~c"URL", String.to_charlist("#{conn.scheme}://#{conn.host}:#{conn.port}") |> dbg()}
+          [
+            :binary,
+            args: [Path.join(:code.priv_dir(:k8s_broadcaster), "headless_client.js")],
+            env: [
+              {~c"TOKEN", String.to_charlist(whip_token)},
+              {~c"URL", String.to_charlist("#{conn.scheme}://#{conn.host}:#{conn.port}") |> dbg()}
+            ]
           ]
         )
 
@@ -59,8 +62,8 @@ defmodule K8sBroadcasterWeb.PageController do
       {:DOWN, _ref, :port, _, reason} ->
         Logger.info("Headless client exited with reason: #{inspect(reason)}")
 
-      other ->
-        dbg(other)
+      {^port, {:data, data}} ->
+        Logger.info(String.trim("[Headless client]: #{data}"))
         stream_receive(port)
     end
   end
