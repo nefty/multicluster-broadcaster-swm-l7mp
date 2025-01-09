@@ -100,7 +100,8 @@ async function connectInput(view) {
       connectInput(view);
     };
 
-    view.videoQuality.onchange = () => setDefaultLayer(view.videoQuality.value);
+    view.videoQuality.onchange = () =>
+      setDefaultLayer(view, view.videoQuality.value);
 
     view.whepClient.changeLayer(view.defaultLayer);
 
