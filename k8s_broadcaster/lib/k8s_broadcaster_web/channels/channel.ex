@@ -5,11 +5,11 @@ defmodule K8sBroadcasterWeb.Channel do
 
   alias K8sBroadcasterWeb.{Endpoint, Presence}
 
-  @spec input_added(String.t()) :: :ok
-  def input_added(id) do
+  @spec input_added(K8sBroadcaster.Forwarder.input_spec()) :: :ok
+  def input_added(input) do
     Endpoint.broadcast!("k8s_broadcaster:signaling", "input_added", %{
-      id: id,
-      region: Application.fetch_env!(:k8s_broadcaster, :region)
+      id: input.id,
+      region: input.region
     })
   end
 

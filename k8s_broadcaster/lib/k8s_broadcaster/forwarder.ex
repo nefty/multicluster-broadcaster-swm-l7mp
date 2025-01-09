@@ -26,7 +26,8 @@ defmodule K8sBroadcaster.Forwarder do
           id: id(),
           video: String.t() | nil,
           audio: String.t() | nil,
-          available_layers: [String.t()] | nil
+          available_layers: [String.t()] | nil,
+          region: String.t() | nil
         }
 
   @type output_spec :: %{
@@ -42,7 +43,7 @@ defmodule K8sBroadcaster.Forwarder do
           # WHIP
           pending_input: input_spec() | nil,
           local_input: input_spec() | nil,
-          remote_inputs: %{pid() => input_spec()},
+          remote_input: input_spec() | nil,
 
           # WHEP
           pending_outputs: MapSet.t(pid()),
@@ -164,7 +165,8 @@ defmodule K8sBroadcaster.Forwarder do
       id: id,
       video: nil,
       audio: nil,
-      available_layers: nil
+      available_layers: nil,
+      region: K8sBroadcaster.get_region()
     }
 
     state = %{state | pending_input: input}
@@ -245,7 +247,7 @@ defmodule K8sBroadcaster.Forwarder do
     state = %{state | pending_input: nil, local_input: input}
 
     Logger.info("Input #{input.id} (#{inspect(pc)}) has successfully connected")
-    Channel.input_added(input.id)
+    Channel.input_added(input)
 
     # ID collisions in the cluster are unlikely and thus will not be checked against
     PubSub.broadcast_from(@pubsub, self(), "inputs", {:input_added, input})
