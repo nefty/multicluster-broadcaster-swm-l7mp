@@ -1,4 +1,4 @@
-module github.com/l7mp/multicluster-broadcaster-swm-l7mp
+module github.com/l7mp/multicluster-broadcaster-swm-l7mp/whep-client
 
 go 1.23.4
 
