@@ -3,7 +3,7 @@ module github.com/l7mp/multicluster-broadcaster-swm-l7mp/whep-client
 go 1.23.4
 
 require (
-	github.com/elixir-webrtc/whep-client v0.0.0-20250115155231-7646dbe1b321
+	github.com/elixir-webrtc/whep-client v0.0.0-20250115164350-ec5781b36f6f
 	github.com/pion/webrtc/v4 v4.0.7
 )
 
