@@ -44,8 +44,7 @@ defmodule K8sBroadcasterWeb.Router do
     pipe_through :api_auth
 
     post "/whip", MediaController, :whip
-    post "/server-stream", PageController, :start_server_stream
-    delete "/server-stream", PageController, :stop_server_stream
+    post "/server-stream", PageController, :toggle_server_stream
   end
 
   scope "/admin", K8sBroadcasterWeb do

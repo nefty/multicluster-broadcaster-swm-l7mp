@@ -11,26 +11,22 @@ defmodule K8sBroadcasterWeb.PageController do
     render(conn, :panel, page_title: "Panel")
   end
 
-  def start_server_stream(conn, _params) do
+  def toggle_server_stream(conn, _params) do
     whip_token = Application.fetch_env!(:k8s_broadcaster, :whip_token)
 
-    {:ok, _pid} =
-      Task.Supervisor.start_child(
-        K8sBroadcaster.TaskSupervisor,
-        K8sBroadcaster.ServerStreamTask,
-        :start,
-        [conn, whip_token]
-      )
+    case Task.Supervisor.children(K8sBroadcaster.TaskSupervisor) do
+      [] ->
+        {:ok, _pid} =
+          Task.Supervisor.start_child(
+            K8sBroadcaster.TaskSupervisor,
+            K8sBroadcaster.ServerStreamTask,
+            :start,
+            [conn, whip_token]
+          )
 
-    conn
-    |> resp(201, "")
-    |> send_resp()
-  end
-
-  def stop_server_stream(conn, _params) do
-    K8sBroadcaster.TaskSupervisor
-    |> Task.Supervisor.children()
-    |> Enum.each(fn pid -> K8sBroadcaster.ServerStreamTask.stop(pid) end)
+      children ->
+        Enum.each(children, fn pid -> K8sBroadcaster.ServerStreamTask.stop(pid) end)
+    end
 
     conn
     |> resp(201, "")

@@ -90,7 +90,7 @@ function bindControls() {
   audioDevices.onchange = setupStream;
   videoDevices.onchange = setupStream;
   button.onclick = startStreaming;
-  serverStreamButton.onclick = startServerStreaming;
+  serverStreamButton.onclick = toggleServerStreaming;
 }
 
 function disableControls() {
@@ -355,7 +355,7 @@ function stopStreaming() {
   button.onclick = startStreaming;
 }
 
-async function startServerStreaming() {
+async function toggleServerStreaming() {
   const serverStreamUrl = "/api/server-stream";
   const response = await fetch(serverStreamUrl, {
     method: "POST",
@@ -366,30 +366,9 @@ async function startServerStreaming() {
   });
 
   if (response.status === 201) {
-    console.log(`Successfully start server side streaming`);
-    serverStreamButton.onclick = stopServerStreaming;
-    serverStreamButton.innerText = "Stop server infinite stream";
+    console.log(`Successfully toggled server side streaming`);
   } else {
-    console.error(`Failed to start server side streaming`);
-  }
-}
-
-async function stopServerStreaming() {
-  const serverStreamUrl = "/api/server-stream";
-  const response = await fetch(serverStreamUrl, {
-    method: "DELETE",
-    cache: "no-cache",
-    headers: {
-      Authorization: `Bearer ${serverToken.value}`,
-    },
-  });
-
-  if (response.status === 201) {
-    console.log(`Successfully stopped server side streaming`);
-    serverStreamButton.onclick = startServerStreaming;
-    serverStreamButton.innerText = "Start server infinite stream";
-  } else {
-    console.error(`Failed to stop server side streaming`);
+    console.error(`Failed to toggle server side streaming`);
   }
 }
 
