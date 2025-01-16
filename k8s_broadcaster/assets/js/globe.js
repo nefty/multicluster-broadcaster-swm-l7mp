@@ -173,9 +173,9 @@ export class Globe {
       .labelsData(this.labels)
       .labelColor((label) => {
         if (label.streamer) {
-          return "#e76f51";
+          return "#FF72A1";
         } else {
-          return "#00f5d4";
+          return "#3AC2BE";
         }
       })
       .labelSize(2)
@@ -256,7 +256,7 @@ export class Globe {
 
     this.globe
       .arcsData(arcsData)
-      .arcColor(() => "#00f5d4")
+      .arcColor(() => "#3AC2BE")
       .arcStroke(2)
       .arcDashLength(0.02)
       .arcDashGap(0.01)
