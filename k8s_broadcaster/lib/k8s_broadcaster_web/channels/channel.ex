@@ -30,14 +30,8 @@ defmodule K8sBroadcasterWeb.Channel do
     push(socket, "presence_state", Presence.list(socket))
 
     case K8sBroadcaster.Forwarder.get_input() do
-      nil ->
-        :ok
-
-      input ->
-        push(socket, "input_added", %{
-          id: input.id,
-          region: Application.fetch_env!(:k8s_broadcaster, :region)
-        })
+      nil -> :ok
+      input -> push(socket, "input_added", %{id: input.id, region: input.region})
     end
 
     {:noreply, socket}
