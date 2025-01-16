@@ -80,7 +80,7 @@ function initControls(camera, renderer) {
   controls.maxDistance = 500;
   controls.rotateSpeed = 0.8;
   controls.zoomSpeed = 1;
-  controls.autoRotate = true;
+  controls.autoRotate = false;
 
   controls.minPolarAngle = Math.PI / 3.5;
   controls.maxPolarAngle = Math.PI - Math.PI / 3;
@@ -106,7 +106,7 @@ export class Globe {
     this.scene = initScene(this.globe, this.camera);
     document.getElementById(elementId).appendChild(this.renderer.domElement);
 
-    window.addEventListener("resize", () => this.#onWindowResize(), false);
+    window.addEventListener("resize", () => this.updateSize(), false);
   }
 
   animate() {
@@ -134,11 +134,24 @@ export class Globe {
     for (const label of this.labels) {
       if (label.text.toLowerCase() === region.toLowerCase()) {
         label.streamer = true;
+        // this will cause color update
+        this.addLabels([label]);
         break;
       }
     }
 
     this.#updateArcs();
+  }
+
+  clearStreamerRegion() {
+    for (const label of this.labels) {
+      if (label.streamer) {
+        label.streamer = false;
+        // this will cause color update
+        this.addLabels([label]);
+        break;
+      }
+    }
   }
 
   addLabels(labels) {
@@ -158,7 +171,13 @@ export class Globe {
 
     this.globe
       .labelsData(this.labels)
-      .labelColor(() => "#00f5d4")
+      .labelColor((label) => {
+        if (label.streamer) {
+          return "#e76f51";
+        } else {
+          return "#00f5d4";
+        }
+      })
       .labelSize(2)
       .labelDotRadius(1.5)
       .labelText("text");
@@ -239,7 +258,7 @@ export class Globe {
       .arcsData(arcsData)
       .arcColor(() => "#00f5d4")
       .arcStroke(2)
-      .arcDashLength(0.01)
+      .arcDashLength(0.02)
       .arcDashGap(0.01)
       .arcDashAnimateTime(10000);
   }
@@ -248,7 +267,7 @@ export class Globe {
     this.globe.arcsData([]);
   }
 
-  #onWindowResize() {
+  updateSize() {
     this.camera.aspect = this.element.offsetWidth / this.element.offsetHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.element.offsetWidth, this.element.offsetHeight);

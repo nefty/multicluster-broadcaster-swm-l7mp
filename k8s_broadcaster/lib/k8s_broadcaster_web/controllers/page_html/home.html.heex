@@ -8,31 +8,8 @@
         <div class="flex flex-1">
           <div id="cluster-view" class="relative w-full h-full">
             <div
-              id="localize"
-              class="absolute top-4 left-4 w-10 h-10 p-2 flex items-center justify-center rounded-lg bg-[#675AF1]"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="#F6F5FF"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-                />
-              </svg>
-            </div>
-            <div
               id="rotate"
-              class="absolute top-16 left-4 w-10 h-10 p-2 flex items-center justify-center rounded-lg bg-[#675AF1]"
+              class="absolute top-4 left-4 w-10 h-10 p-2 flex items-center justify-center rounded-lg bg-[#675AF1]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -51,27 +28,34 @@
           </div>
         </div>
         <div id="cluster-buttons" class="flex flex-col gap-5">
+          <button
+            id="localize"
+            value={K8sBroadcaster.Application.cluster(:c0).url || assigns[:current_url]}
+            class="flex-1 p-2 bg-[#006747] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
+          >
+            Localize yourself
+          </button>
           <div class="flex flex-row gap-5">
             <button
               id="button-1"
               value={K8sBroadcaster.Application.cluster(:c1).url || assigns[:current_url]}
               class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
             >
-              Join {K8sBroadcaster.Application.cluster(:c1).reg || "LOC"}
+              Connect {K8sBroadcaster.Application.cluster(:c1).reg || "LOC"}
             </button>
             <button
               id="button-2"
               value={K8sBroadcaster.Application.cluster(:c2).url || assigns[:current_url]}
               class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
             >
-              Join {K8sBroadcaster.Application.cluster(:c2).reg || "LOC"}
+              Connect {K8sBroadcaster.Application.cluster(:c2).reg || "LOC"}
             </button>
             <button
               id="button-3"
               value={K8sBroadcaster.Application.cluster(:c3).url || assigns[:current_url]}
               class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
             >
-              Join {K8sBroadcaster.Application.cluster(:c3).reg || "LOC"}
+              Connect {K8sBroadcaster.Application.cluster(:c3).reg || "LOC"}
             </button>
           </div>
           <button
@@ -79,7 +63,7 @@
             value={K8sBroadcaster.Application.cluster(:c0).url || assigns[:current_url]}
             class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
           >
-            Join geographically closest
+            Connect geographically closest
           </button>
         </div>
       </div>
@@ -89,8 +73,38 @@
           Received stream
         </p>
         <video id="videoplayer" class="w-full bg-black" controls autoplay muted></video>
-        <div class="flex flex-col gap-2">
-          <div class="flex gap-4 items-center">
+        <div class="flex gap-6">
+          <div class="flex flex-col gap-2 border-r pr-4 border-[#050C25]">
+            <label
+              for="stream-source"
+              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+            >
+              Stream source
+            </label>
+            <p
+              id="stream-source"
+              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+            >
+              WAITING
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label
+              for="connected-to"
+              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+            >
+              Connected to
+            </label>
+            <p
+              id="connected-to"
+              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+            >
+              WAITING
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-row gap-6">
+          <div class="flex flex-col gap-2">
             <label
               for="video-quality"
               class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
@@ -107,37 +121,75 @@
               <option value="l">Low</option>
             </select>
           </div>
-          <div>
-            <label
-              for="packet-loss-range"
-              class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
-            >
-              Packet loss (%):
-            </label>
-            <output id="packet-loss-range-output" for="packet-loss-range">0</output>
-            <.input
-              id="packet-loss-range"
-              name="packet-loss"
-              type="range"
-              value="0"
-              min="0"
-              max="100"
-            />
-          </div>
-          <div class="flex gap-2 items-center">
+          <div class="flex flex-col gap-2 items-center">
             <label
               for="rtx-checkbox"
               class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
             >
               Retransmissions
             </label>
-            <input
-              id="rtx-checkbox"
-              name="rtx"
-              type="checkbox"
-              class="rounded accent-[#675AF1] text-[#675AF1] focus:ring-0"
-              checked
-            />
+            <div class="flex flex-1 items-center">
+              <input
+                id="rtx-checkbox"
+                name="rtx"
+                type="checkbox"
+                class="rounded accent-[#675AF1] text-[#675AF1] focus:ring-0"
+                checked
+              />
+            </div>
+          </div>
+          <div class="flex flex-col flex-1 gap-2 max-w-64">
+            <div>
+              <label
+                for="packet-loss-range"
+                class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+              >
+                Packet loss (%):
+              </label>
+              <output id="packet-loss-range-output" for="packet-loss-range">0</output>
+            </div>
+            <div class="flex flex-1 items-center">
+              <input
+                id="packet-loss-range"
+                class="flex-1"
+                name="packet-loss"
+                type="range"
+                value="0"
+                min="0"
+                max="100"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-row">
+            <div class="flex flex-col gap-2 border-r pr-4 border-[#050C25]">
+              <label
+                for="packet-loss-range"
+                class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+              >
+                RTT (ms)
+              </label>
+              <p id="rtt-short">0</p>
+            </div>
+            <div class="flex flex-col gap-2 border-r px-4 border-[#050C25]">
+              <label
+                for="packet-loss-range"
+                class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+              >
+                avgJitterBufferDelay (ms)
+              </label>
+              <p id="avg-jitter-buffer-delay-short">0</p>
+            </div>
+            <div class="flex flex-col gap-2 pl-4">
+              <label
+                for="packet-loss-range"
+                class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25]"
+              >
+                freezeDuration (s)
+              </label>
+              <p id="freeze-duration-short">0</p>
+            </div>
           </div>
         </div>
       </div>
@@ -162,7 +214,7 @@
             <td class="w-[100px] py-2 text-right pr-4 border-r border-[#675AF1]" id="duration">
               0
             </td>
-            <td class="w-[215px] py-2 pl-4">rtt (ms)</td>
+            <td class="w-[215px] py-2 pl-4">RTT (ms)</td>
             <td class="w-[100px] py-2 text-right pr-4 border-r border-[#675AF1]" id="rtt">0</td>
             <td class="w-[215px] py-2 pl-4">audioBitrate (kbps)</td>
             <td class="w-[100px] py-2 text-right pr-4" id="audio-bitrate">0</td>

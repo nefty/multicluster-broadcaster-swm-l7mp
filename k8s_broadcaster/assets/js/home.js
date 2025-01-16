@@ -16,12 +16,16 @@ async function connectSignaling(view) {
     console.log("New input:", id);
     view.inputId = id;
     view.globe.setStreamerRegion(region);
+    view.streamSource.innerText = region.toUpperCase();
     connectInput(view);
   });
 
   view.channel.on("input_removed", ({ id: id }) => {
     console.log("Input removed:", id);
     view.globe.removeArcs();
+    view.globe.clearStreamerRegion();
+    view.streamSource.innerText = "WAITING";
+    view.connectedTo.innerText = "WAITING";
     removeInput(view);
   });
 
@@ -86,6 +90,7 @@ async function connectInput(view) {
     if (response.status === 200) {
       const region = await response.text();
       view.globe.setConnectedRegion(region);
+      view.connectedTo.innerText = region.toUpperCase();
     }
 
     view.packetLossRange.onchange = () => {
@@ -130,6 +135,8 @@ async function removeInput(view) {
   view.stats.lastAudioReport = null;
   view.stats.lastVideoReport = null;
   view.stats.duration.innerText = 0;
+  view.stats.rtt.innerText = 0;
+  view.stats.rttShort.innerText = 0;
   view.stats.audioBitrate.innerText = 0;
   view.stats.videoBitrate.innerText = 0;
   view.stats.frameWidth.innerText = 0;
@@ -140,8 +147,10 @@ async function removeInput(view) {
   view.stats.packetLoss.innerText = 0;
   view.stats.nackCount.innerText = 0;
   view.stats.avgJitterBufferDelay.innerText = 0;
+  view.stats.avgJitterBufferDelayShort.innerText = 0;
   view.stats.freezeCount.innerText = 0;
   view.stats.freezeDuration.innerText = 0;
+  view.stats.freezeDurationShort.innerText = 0;
 }
 
 async function setDefaultLayer(view, layer) {
@@ -176,6 +185,7 @@ async function readPCStats(view) {
 function processCandidatePairReport(view, report) {
   const timestamp = toXLabel(new Date(report.timestamp));
   view.stats.rtt.innerText = report.currentRoundTripTime * 1000;
+  view.stats.rttShort.innerText = report.currentRoundTripTime * 1000;
   view.stats.rttTS.push(timestamp, report.currentRoundTripTime * 1000);
   view.rttChart.update();
 
@@ -247,8 +257,11 @@ function processVideoReport(view, report) {
   view.stats.keyframesDecoded.innerText = report.keyFramesDecoded;
   view.stats.pliCount.innerText = report.pliCount;
   view.stats.avgJitterBufferDelay.innerText = avgJitterBufferDelay.toFixed(2);
+  view.stats.avgJitterBufferDelayShort.innerText =
+    avgJitterBufferDelay.toFixed(2);
   view.stats.freezeCount.innerText = report.freezeCount;
   view.stats.freezeDuration.innerText = report.totalFreezesDuration;
+  view.stats.freezeDurationShort.innerText = report.totalFreezesDuration;
   // nacks seem to be present only for video?
   view.stats.nackCount = report.nackCount;
 
@@ -454,6 +467,8 @@ export const Home = {
   mounted() {
     // read html elements
     const view = this;
+    view.streamSource = document.getElementById("stream-source");
+    view.connectedTo = document.getElementById("connected-to");
     view.viewercount = document.getElementById("viewercount");
     view.videoQuality = document.getElementById("video-quality");
     view.rtxCheckbox = document.getElementById("rtx-checkbox");
@@ -471,6 +486,7 @@ export const Home = {
     view.stats = {
       duration: document.getElementById("duration"),
       rtt: document.getElementById("rtt"),
+      rttShort: document.getElementById("rtt-short"),
       audioBitrate: document.getElementById("audio-bitrate"),
       videoBitrate: document.getElementById("video-bitrate"),
       packetsReceived: document.getElementById("packets-received"),
@@ -482,8 +498,12 @@ export const Home = {
       packetLoss: document.getElementById("packet-loss"),
       nackCount: document.getElementById("nack-count"),
       avgJitterBufferDelay: document.getElementById("avg-jitter-buffer-delay"),
+      avgJitterBufferDelayShort: document.getElementById(
+        "avg-jitter-buffer-delay-short"
+      ),
       freezeCount: document.getElementById("freeze-count"),
       freezeDuration: document.getElementById("freeze-duration"),
+      freezeDurationShort: document.getElementById("freeze-duration-short"),
 
       // time series
       rttTS: new TimeSeries().populateLastMinute(),
@@ -523,7 +543,7 @@ export const Home = {
 
     view.rttChart = createChart(
       document.getElementById("rtt-chart"),
-      "rtt (ms)",
+      "RTT (ms)",
       view.stats.rttTS
     );
     view.packetsReceivedChart = createChart(
@@ -585,6 +605,10 @@ export const Home = {
     view.globe = new Globe("cluster-view");
     view.globe.animate();
 
+    // update size when div wrapping canvas changes its size
+    const resizeObserver = new ResizeObserver(() => view.globe.updateSize());
+    resizeObserver.observe(document.getElementById("cluster-view"));
+
     document.getElementById("localize").onclick = () => {
       navigator.geolocation.getCurrentPosition((position) => {
         label = {
@@ -598,7 +622,6 @@ export const Home = {
     };
 
     document.getElementById("rotate").onclick = () => {
-      console.log(view.globe.controls.autoRotate);
       view.globe.controls.autoRotate = !view.globe.controls.autoRotate;
     };
 
