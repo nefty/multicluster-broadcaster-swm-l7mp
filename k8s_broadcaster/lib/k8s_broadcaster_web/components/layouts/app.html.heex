@@ -1,14 +1,23 @@
 <header class="flex flex-row justify-content items-center w-full px-7 py-9 bg-[#F6F5FF]">
   <div class="max-w-[1500px] w-full m-auto flex flex-row items-center justify-between">
-    <div class="flex flex-col">
-      <span class="font-dmsans text-[#050C25] non-italic text-[32px] leading-[140%] font-bold">
-        K8s Broadcaster
-      </span>
-      <span class="font-dmsans text-[#675AF1] non-italic text-[16px] leading-[140%] font-medium">
-        built with
-        <a class="underline underline-offset-2" href="https://elixir-webrtc.org">Elixir WebRTC</a>
-        and
-        <a class="underline underline-offset-2" href="https://github.com/l7mp/stunner">Stunner</a>
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col">
+        <span class="font-dmsans text-[#050C25] non-italic text-[32px] leading-[140%] font-bold">
+          K8s Broadcaster
+        </span>
+        <span class="font-dmsans text-[#675AF1] non-italic text-[16px] leading-[140%] font-medium">
+          built with
+          <a class="underline underline-offset-2" href="https://elixir-webrtc.org">Elixir WebRTC</a>
+          and
+          <a class="underline underline-offset-2" href="https://github.com/l7mp/stunner">Stunner</a>
+        </span>
+      </div>
+      <span class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25] max-w-[1000px]">
+        K8s Broadcaster is a simple, globally distributed streaming service.
+        Three Kubernetes clusters are connected in a single network using <a class="underline underline-offset-2" href="https://cilium.io/">Cilium</a>.
+        The stream is transmitted from Singapore to US-WEST and Germany using <a class="underline underline-offset-2" href="https://www.erlang.org/doc/system/distributed.html"> Distributed Erlang </a> (TCP).
+        Connect to different regions via WebRTC (UDP) and observe the difference in statistics.
+        Read more in our <a class="underline underline-offset-2" href="/">blog-post</a>.
       </span>
     </div>
     <div class="flex">
