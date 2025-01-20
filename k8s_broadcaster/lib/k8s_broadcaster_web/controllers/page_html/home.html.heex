@@ -195,14 +195,31 @@
     </div>
   </div>
 
-  <div class="py-7 px-7">
+  <div class="py-7 px-7 flex flex-col justify-center m-auto gap-16 w-full max-w-[1500px] items-center">
+    <div class="flex border-1 border rounded-l-[20px] rounded-r-[20px] px-3 shadow-lg">
+      <div id="statistics-tab" class="cursor-pointer border-1 border-r pr-2">
+        <p class="font-dmsans non-italic font-bold text-[24px] leading-[140%] text-[#050C25]">
+          Statistics
+        </p>
+      </div>
+      <div id="compare-tab" class="pl-2 cursor-pointer ">
+        <p class="font-dmsans non-italic font-bold text-[24px] leading-[140%] text-[#050C25]">
+          Compare
+        </p>
+      </div>
+    </div>
+
     <div
       id="videoplayer-stats"
       class="flex flex-col justify-center items-center w-full max-w-[1500px] m-auto gap-16"
     >
-      <p class="font-dmsans non-italic font-bold text-[24px] leading-[140%] text-[#050C25]">
-        Statistics
-      </p>
+      <button
+        id="record-btn"
+        class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
+      >
+        Record
+      </button>
+
       <table
         id="stats"
         class="font-dmsans non-italic font-medium text-[16px] text-[#050C25] w-full max-w-[1000px]"
@@ -288,6 +305,44 @@
         <div class="w-96"><canvas id="avgJitter-chart"></canvas></div>
         <div class="w-96"><canvas id="freezeCount-chart"></canvas></div>
         <div class="w-96"><canvas id="freezeDuration-chart"></canvas></div>
+      </div>
+    </div>
+
+    <div
+      id="compare-stats"
+      class="flex flex-col hidden justify-center items-center w-full max-w-[1500px] m-auto gap-16"
+    >
+      <div class="flex justify-center items-center w-full max-w-[1500px] m-auto gap-16">
+        <input
+          id="file-1"
+          type="file"
+          class="font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center"
+        />
+        <input
+          id="file-2"
+          type="file"
+          class="font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center"
+        />
+        <button
+          id="compare-btn"
+          class="flex-1 p-2 bg-[#675AF1] rounded-lg font-dmsans non-italic font-medium text-[16px] leading-[140%] text-center text-white"
+        >
+          Compare
+        </button>
+      </div>
+      <div class="flex flex-row flex-wrap justify-center items-center gap-x-24">
+        <div class="w-96"><canvas id="c-rtt-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-audio-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-video-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-packetsReceived-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-fps-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-keyframesDecoded-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-pliCount-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-packetLoss-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-nackCount-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-avgJitter-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-freezeCount-chart"></canvas></div>
+        <div class="w-96"><canvas id="c-freezeDuration-chart"></canvas></div>
       </div>
     </div>
   </div>
