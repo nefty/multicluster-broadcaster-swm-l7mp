@@ -546,8 +546,8 @@ function startRecording(view) {
     freezeDurationTS: new TimeSeries(maxPoints),
   };
 
-  view.record.onclick = () => stopRecording(view);
-  view.record.innerText = "Stop recording";
+  view.recordBtn.onclick = () => stopRecording(view);
+  view.recordBtn.innerText = "Stop recording";
 }
 
 function stopRecording(view) {
@@ -585,8 +585,8 @@ function stopRecording(view) {
 
   view.recorder = {};
 
-  view.record.onclick = () => startRecording(view);
-  view.record.innerText = "Record";
+  view.recordBtn.onclick = () => startRecording(view);
+  view.recordBtn.innerText = "Record";
 }
 
 function zip(...arrays) {
