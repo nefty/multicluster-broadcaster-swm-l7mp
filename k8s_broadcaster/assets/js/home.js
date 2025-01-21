@@ -532,6 +532,7 @@ function startRecording(view) {
   // one hour assuming getStats is called every second
   maxPoints = 3600;
   view.recorder = {
+    startTime: new Date(),
     rttTS: new TimeSeries(maxPoints),
     audioBitrateTS: new TimeSeries(maxPoints),
     videoBitrateTS: new TimeSeries(maxPoints),
@@ -572,13 +573,12 @@ function stopRecording(view) {
 
   var file = new Blob([csvContent], { type: "text" });
 
-  const now = new Date();
   const filename =
     view.streamSource.innerText +
     "_" +
     view.connectedTo.innerText +
     "_" +
-    now.toISOString() +
+    view.recorder.startTime.toISOString() +
     ".csv";
 
   var a = document.createElement("a");
