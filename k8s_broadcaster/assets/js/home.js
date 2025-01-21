@@ -781,17 +781,16 @@ export const Home = {
       view.statisticsTab.classList.add("bg-gray-200");
       view.compareTab.classList.remove("bg-gray-200");
       view.compareStats.classList.remove("hidden");
-      view.compareStats.classList.remove("hidden");
-      view.compareStats.classList.remove("flex");
+      view.compareStats.classList.remove("lg:flex");
       view.compareStats.classList.add("hidden");
     };
 
     view.compareTab.onclick = () => {
-      view.videoplayerStats.classList.remove("hidden");
+      view.videoplayerStats.classList.remove("lg:hidden");
       view.videoplayerStats.classList.remove("flex");
-      view.videoplayerStats.classList.add("hidden");
-      view.compareStats.classList.remove("hidden");
-      view.compareStats.classList.add("flex");
+      view.videoplayerStats.classList.add("lg:hidden");
+      view.compareStats.classList.remove("lg:flex");
+      view.compareStats.classList.add("lg:flex");
       view.statisticsTab.classList.remove("bg-gray-200");
       view.compareTab.classList.remove("bg-gray-200");
       view.compareTab.classList.add("bg-gray-200");
