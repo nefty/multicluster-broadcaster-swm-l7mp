@@ -547,7 +547,7 @@ function startRecording(view) {
   };
 
   view.recordBtn.onclick = () => stopRecording(view);
-  view.recordBtn.innerText = "Stop recording";
+  view.recordBtn.innerText = "Stop recording metrics";
 }
 
 function stopRecording(view) {
@@ -572,10 +572,19 @@ function stopRecording(view) {
 
   var file = new Blob([csvContent], { type: "text" });
 
+  const now = new Date();
+  const filename =
+    view.streamSource.innerText +
+    "_" +
+    view.connectedTo.innerText +
+    "_" +
+    now.toISOString() +
+    ".csv";
+
   var a = document.createElement("a");
   var url = URL.createObjectURL(file);
   a.href = url;
-  a.download = "stats.csv";
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   setTimeout(function () {
@@ -586,7 +595,7 @@ function stopRecording(view) {
   view.recorder = {};
 
   view.recordBtn.onclick = () => startRecording(view);
-  view.recordBtn.innerText = "Record";
+  view.recordBtn.innerText = "Record metrics";
 }
 
 function zip(...arrays) {
@@ -768,6 +777,10 @@ export const Home = {
     view.statisticsTab.onclick = () => {
       view.videoplayerStats.classList.remove("hidden");
       view.videoplayerStats.classList.add("flex");
+      view.statisticsTab.classList.remove("bg-gray-200");
+      view.statisticsTab.classList.add("bg-gray-200");
+      view.compareTab.classList.remove("bg-gray-200");
+      view.compareStats.classList.remove("hidden");
       view.compareStats.classList.remove("hidden");
       view.compareStats.classList.remove("flex");
       view.compareStats.classList.add("hidden");
@@ -779,6 +792,9 @@ export const Home = {
       view.videoplayerStats.classList.add("hidden");
       view.compareStats.classList.remove("hidden");
       view.compareStats.classList.add("flex");
+      view.statisticsTab.classList.remove("bg-gray-200");
+      view.compareTab.classList.remove("bg-gray-200");
+      view.compareTab.classList.add("bg-gray-200");
     };
 
     view.stats = {
