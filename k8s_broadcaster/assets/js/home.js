@@ -775,7 +775,7 @@ export const Home = {
     view.compareBtn = document.getElementById("compare-btn");
 
     view.statisticsTab.onclick = () => {
-      view.videoplayerStats.classList.remove("hidden");
+      view.videoplayerStats.classList.remove("lg:hidden");
       view.videoplayerStats.classList.add("flex");
       view.statisticsTab.classList.remove("bg-gray-200");
       view.statisticsTab.classList.add("bg-gray-200");
