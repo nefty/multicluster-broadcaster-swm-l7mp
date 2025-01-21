@@ -1,28 +1,24 @@
 <header class="flex flex-row justify-content items-center w-full px-7 py-9 bg-[#F6F5FF]">
-  <div class="max-w-[1500px] w-full m-auto flex flex-row items-center justify-between">
-    <div class="flex flex-col gap-4">
-      <div class="flex flex-col">
-        <span class="font-dmsans text-[#050C25] non-italic text-[32px] leading-[140%] font-bold">
-          K8s Broadcaster
-        </span>
-        <span class="font-dmsans text-[#675AF1] non-italic text-[16px] leading-[140%] font-medium">
-          built with
-          <a class="underline underline-offset-2" href="https://elixir-webrtc.org">Elixir WebRTC</a>
-          and
-          <a class="underline underline-offset-2" href="https://github.com/l7mp/stunner">Stunner</a>
-        </span>
+  <div class="max-w-[1500px] w-full m-auto flex flex-col gap-4">
+    <div class="flex flex-col text-center lg:text-left lg:flex-row items-center justify-between">
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col">
+          <span class="font-dmsans text-[#050C25] non-italic text-[32px] leading-[140%] font-bold">
+            K8s Broadcaster
+          </span>
+          <span class="font-dmsans text-[#675AF1] non-italic text-[16px] leading-[140%] font-medium">
+            built with
+            <a class="underline underline-offset-2" href="https://elixir-webrtc.org">
+              Elixir WebRTC
+            </a>
+            and
+            <a class="underline underline-offset-2" href="https://github.com/l7mp/stunner">
+              Stunner
+            </a>
+          </span>
+        </div>
       </div>
-      <span class="font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25] max-w-[1000px]">
-        K8s Broadcaster is a simple, globally distributed streaming service.
-        Three Kubernetes clusters are connected in a single network using <a class="underline underline-offset-2" href="https://cilium.io/">Cilium</a>.
-        The stream is transmitted from Singapore to US-WEST and Germany using <a class="underline underline-offset-2" href="https://www.erlang.org/doc/system/distributed.html"> Distributed Erlang </a> (TCP).
-        Machines are allocated in <a class="underline underline-offset-2" href="https://www.hetzner.com/">Hetzner</a> datacenters.
-        Connect to different regions via WebRTC (UDP) and observe the difference in statistics.
-        Read more in our <a class="underline underline-offset-2" href="/">blog-post</a>.
-      </span>
-    </div>
-    <div class="flex">
-      <div class="flex items-center gap-6 font-semibold leading-6 text-brand/80">
+      <div class="flex items-center gap-6 font-semibold leading-6 text-brand/80 p-4">
         <div class="flex gap-2 items-center">
           <p
             class="font-dmsans font-medium non-italic leading-[140%] text-[16px] text-[#675AF1]"
@@ -37,6 +33,29 @@
         </a>
       </div>
     </div>
+    <span class="lg:hidden font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25] max-w-[1000px] text-center">
+      For full experience use desktop version. Most options are hidden on small devices.
+    </span>
+    <span class="hidden lg:block font-dmsans text-[16px] font-medium non-italic leading-[140%] text-[#050C25] max-w-[1000px]">
+      K8s Broadcaster is a simple, globally distributed streaming service.
+      Three Kubernetes clusters are connected in a single network using <a
+        class="underline underline-offset-2"
+        href="https://cilium.io/"
+      >Cilium</a>.
+      The stream is transmitted from Singapore to US-WEST and Germany using
+      <a
+        class="underline underline-offset-2"
+        href="https://www.erlang.org/doc/system/distributed.html"
+      >
+         Distributed Erlang 
+      </a>
+      (TCP).
+      Machines are allocated in
+      <a class="underline underline-offset-2" href="https://www.hetzner.com/">Hetzner</a>
+      datacenters.
+      Connect to different regions via WebRTC (UDP) and observe the difference in statistics.
+      Read more in our <a class="underline underline-offset-2" href="/">blog-post</a>.
+    </span>
   </div>
 </header>
 <main class="flex-1">
