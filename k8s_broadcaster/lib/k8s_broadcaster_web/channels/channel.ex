@@ -40,8 +40,12 @@ defmodule K8sBroadcasterWeb.Channel do
   @impl true
   def handle_in("packet_loss", payload, socket) do
     case K8sBroadcaster.PeerSupervisor.fetch_pid(payload["resourceId"]) do
-      {:ok, pid} -> K8sBroadcaster.Forwarder.set_packet_loss(pid, payload["value"])
-      _ -> :ok
+      {:ok, pid} ->
+        ExWebRTC.PeerConnection.set_packet_loss(pid, String.to_integer(payload["value"]))
+
+      _ ->
+        Logger.warning("Tried to set packet loss for non-existing peer connection.")
+        :ok
     end
 
     {:noreply, socket}
