@@ -60,7 +60,7 @@ export class WHEPClient {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
   
-      const response = await fetch(this.url, {
+      const response = await fetch(this.url + "/api/whep", {
         method: 'POST',
         cache: 'no-cache',
         headers: {

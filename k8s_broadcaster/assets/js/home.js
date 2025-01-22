@@ -49,7 +49,7 @@ async function connectSignaling(view) {
 async function connectInput(view) {
   let whepEndpoint;
   if (view.url) {
-    whepEndpoint = view.url + "api/whep";
+    whepEndpoint = view.url;
   } else {
     whepEndpoint = view.whepEndpointBase;
   }
@@ -836,7 +836,7 @@ export const Home = {
     view.recorder = {};
 
     // declare custom fields
-    view.whepEndpointBase = `${window.location.origin}/api/whep`;
+    view.whepEndpointBase = `${window.location.origin}`;
     view.defaultLayer = "h";
     view.url = undefined;
     view.inputId = undefined;
