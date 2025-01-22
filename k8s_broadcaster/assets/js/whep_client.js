@@ -109,7 +109,7 @@ export class WHEPClient {
       //
       // For more info refer to https://www.ietf.org/archive/id/draft-ietf-wish-whep-01.html#section-4.6.2
       if (this.patchEndpoint) {
-        const response = await fetch(`${this.patchEndpoint}/layer`, {
+        const response = await fetch(`${this.url}/${this.patchEndpoint}/layer`, {
           method: 'POST',
           cache: 'no-cache',
           headers: { 'Content-Type': 'application/json' },
@@ -123,7 +123,7 @@ export class WHEPClient {
     }
   
     async sendCandidate(candidate) {
-      const response = await fetch(this.patchEndpoint, {
+      const response = await fetch(`${this.url}/${this.patchEndpoint}`, {
         method: 'PATCH',
         cache: 'no-cache',
         headers: {
