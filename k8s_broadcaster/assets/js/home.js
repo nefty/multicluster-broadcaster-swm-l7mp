@@ -765,6 +765,10 @@ export const Home = {
     view.button2 = document.getElementById("button-2");
     view.button3 = document.getElementById("button-3");
     view.buttonAuto = document.getElementById("button-auto");
+    view.button1Mb = document.getElementById("button-1-mb");
+    view.button2Mb = document.getElementById("button-2-mb");
+    view.button3Mb = document.getElementById("button-3-mb");
+    view.buttonAutoMb = document.getElementById("button-auto-mb");
     view.recordBtn = document.getElementById("record-btn");
     view.statisticsTab = document.getElementById("statistics-tab");
     view.compareTab = document.getElementById("compare-tab");
@@ -855,6 +859,10 @@ export const Home = {
     view.button2.onclick = (ev) => buttonOnClick(view, ev.srcElement);
     view.button3.onclick = (ev) => buttonOnClick(view, ev.srcElement);
     view.buttonAuto.onclick = (ev) => buttonOnClick(view, ev.srcElement);
+    view.button1Mb.onclick = (ev) => buttonOnClick(view, ev.srcElement);
+    view.button2Mb.onclick = (ev) => buttonOnClick(view, ev.srcElement);
+    view.button3Mb.onclick = (ev) => buttonOnClick(view, ev.srcElement);
+    view.buttonAutoMb.onclick = (ev) => buttonOnClick(view, ev.srcElement);
 
     view.compareBtn.onclick = () => compare(view);
 
