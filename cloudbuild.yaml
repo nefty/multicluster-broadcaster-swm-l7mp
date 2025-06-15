@@ -50,11 +50,11 @@ steps:
         done
 
 substitutions:
-  # The location of your Artifact Registry repository
-  _AR_HOSTNAME: us-east5-docker.pkg.dev
-  # The name of your Artifact Registry repository
-  _REPO_NAME: broadcaster-repo
-  # Cluster configurations
+  # The location of your Artifact Registry repository - UPDATED
+  _AR_HOSTNAME: us-central1-docker.pkg.dev
+  # The name of your Artifact Registry repository - UPDATED
+  _REPO_NAME: broadcaster-repo-central1
+  # Cluster configurations - updated to match your regions
   _GKE_US_CLUSTER: broadcaster-us
   _GKE_US_LOCATION: us-east5
   _GKE_EU_CLUSTER: broadcaster-eu
