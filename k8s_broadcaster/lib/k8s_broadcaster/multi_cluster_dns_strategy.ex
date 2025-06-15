@@ -43,8 +43,12 @@ defmodule K8sBroadcaster.MultiClusterDNSStrategy do
       |> get_nodes(state.config[:application_name])
       |> MapSet.new()
 
-    added = MapSet.difference(new_nodelist, state.meta[:nodes] || MapSet.new())
-    removed = MapSet.difference(state.meta[:nodes] || MapSet.new(), new_nodelist)
+    # Ensure state.meta is a map, and get existing nodes or empty set
+    current_meta = state.meta || %{}
+    current_nodes = current_meta[:nodes] || MapSet.new()
+
+    added = MapSet.difference(new_nodelist, current_nodes)
+    removed = MapSet.difference(current_nodes, new_nodelist)
 
     new_nodelist
     |> MapSet.difference(MapSet.new([node()]))
@@ -58,7 +62,9 @@ defmodule K8sBroadcaster.MultiClusterDNSStrategy do
     Cluster.Strategy.connect_nodes(topology, connect, list_nodes, MapSet.to_list(added))
     Cluster.Strategy.disconnect_nodes(topology, disconnect, list_nodes, MapSet.to_list(removed))
 
-    %{state | meta: Map.put(state.meta, :nodes, new_nodelist)}
+    # Update meta with new node list, ensuring meta is always a map
+    updated_meta = Map.put(current_meta, :nodes, new_nodelist)
+    %{state | meta: updated_meta}
   end
 
   defp get_services(config) do
