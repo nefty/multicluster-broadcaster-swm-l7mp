@@ -52,3 +52,6 @@ manifests/cloudflare-secret.yaml
 
 # mise-en-place
 mise.toml
+
+# ElixirLS
+k8s_broadcaster/.elixir_ls/

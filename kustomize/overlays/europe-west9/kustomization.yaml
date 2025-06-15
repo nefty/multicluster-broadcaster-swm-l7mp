@@ -4,6 +4,7 @@ kind: Kustomization
 namePrefix: europe-west9-
 resources:
 - ../../base
+# Import ServiceImports for remote clusters only (not own cluster)
+- serviceimports.yaml
 patches:
 - path: patch.yaml
-- path: multi-cluster-patch.yaml

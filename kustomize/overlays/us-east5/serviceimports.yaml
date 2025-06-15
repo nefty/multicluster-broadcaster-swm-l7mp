@@ -1,0 +1,28 @@
+---
+# ServiceImport for europe-west9 cluster's broadcaster service
+apiVersion: net.gke.io/v1
+kind: ServiceImport
+metadata:
+  name: europe-west9-broadcaster-headless
+  annotations:
+    net.gke.io/cluster-dns: "europe-west9-broadcaster-headless.default.svc.clusterset.local"
+spec:
+  ports:
+  - port: 4000
+    protocol: TCP
+  type: ClusterSetIP
+  sessionAffinity: None
+---
+# ServiceImport for asia-southeast1 cluster's broadcaster service
+apiVersion: net.gke.io/v1
+kind: ServiceImport
+metadata:
+  name: asia-southeast1-broadcaster-headless
+  annotations:
+    net.gke.io/cluster-dns: "asia-southeast1-broadcaster-headless.default.svc.clusterset.local"
+spec:
+  ports:
+  - port: 4000
+    protocol: TCP
+  type: ClusterSetIP
+  sessionAffinity: None 

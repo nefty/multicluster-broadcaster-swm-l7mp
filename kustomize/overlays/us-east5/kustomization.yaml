@@ -10,6 +10,7 @@ namePrefix: us-east5-
 # Apply patches to the base configuration
 resources:
 - ../../base
+# Import ServiceImports for remote clusters only (not own cluster)
+- serviceimports.yaml
 patches:
 - path: patch.yaml
-- path: multi-cluster-patch.yaml
