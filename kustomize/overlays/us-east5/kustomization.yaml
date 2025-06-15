@@ -12,3 +12,4 @@ resources:
 - ../../base
 patches:
 - path: patch.yaml
+- path: multi-cluster-patch.yaml

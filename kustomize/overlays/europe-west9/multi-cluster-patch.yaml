@@ -1,0 +1,7 @@
+# Remove the ServiceImport for the local cluster (europe-west9)
+# Keep only imports for remote clusters
+apiVersion: net.gke.io/v1
+kind: ServiceImport
+metadata:
+  name: europe-west9-broadcaster-headless
+$patch: delete 

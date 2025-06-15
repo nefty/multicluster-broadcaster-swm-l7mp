@@ -11,4 +11,6 @@ spec:
             - name: PHX_HOST
               value: "us-east5.broadcaster.gcp.example.com"
             - name: ICE_SERVER_URL
-              value: "turn:us-east5.turn.gcp.example.com:3478?transport=udp" 
+              value: "turn:us-east5.turn.gcp.example.com:3478?transport=udp"
+            - name: CLUSTER_REGION
+              value: "us-east5" 

@@ -37,11 +37,23 @@ read_k8s_dist_config! = fn ->
       raise "Distribution mode `k8s` requires setting the env variable K8S_SERVICE_NAME"
 
     service ->
+      # For multi-cluster setup, we need to discover nodes across all clusters
+      # using the MCS (Multi-Cluster Services) DNS names
+      multi_cluster_services = [
+        # Local cluster service
+        "#{service}.default.svc.cluster.local",
+        # Cross-cluster services via MCS
+        "us-east5-broadcaster-headless.default.svc.clusterset.local",
+        "europe-west9-broadcaster-headless.default.svc.clusterset.local",
+        "asia-southeast1-broadcaster-headless.default.svc.clusterset.local"
+      ]
+
       [
-        strategy: Cluster.Strategy.Kubernetes.DNS,
+        strategy: K8sBroadcaster.MultiClusterDNSStrategy,
         config: [
           application_name: "k8s_broadcaster",
-          service: service
+          services: multi_cluster_services,
+          polling_interval: 5_000
         ]
       ]
   end

@@ -12,4 +12,6 @@ spec:
             - name: PHX_HOST
               value: "europe-west9.broadcaster.gcp.example.com"
             - name: ICE_SERVER_URL
-              value: "turn:europe-west9.turn.gcp.example.com:3478?transport=udp" 
+              value: "turn:europe-west9.turn.gcp.example.com:3478?transport=udp"
+            - name: CLUSTER_REGION
+              value: "europe-west9" 

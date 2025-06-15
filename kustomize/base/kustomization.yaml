@@ -7,3 +7,4 @@ resources:
 - broadcaster.yaml
 - stunner-common.yaml
 - broadcaster-udproute.yaml
+- multi-cluster-services.yaml

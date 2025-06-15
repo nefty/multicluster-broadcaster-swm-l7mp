@@ -15,13 +15,23 @@ resource "google_compute_subnetwork" "subnet" {
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
 
-  secondary_ip_range {
-    range_name    = "pods-range"
-    ip_cidr_range = each.value.pods_range
+  lifecycle {
+    ignore_changes = [
+      secondary_ip_range,
+    ]
+  }
+}
+
+resource "google_compute_firewall" "allow_internal" {
+  project = var.project_id
+  name    = "${var.network_name}-allow-internal"
+  network = google_compute_network.vpc.name
+
+  allow {
+    protocol = "all"
   }
 
-  secondary_ip_range {
-    range_name    = "services-range"
-    ip_cidr_range = each.value.services_range
-  }
-} 
+  source_ranges = [
+    for s in google_compute_subnetwork.subnet : s.ip_cidr_range
+  ]
+}

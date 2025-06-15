@@ -1,0 +1,7 @@
+# Remove the ServiceImport for the local cluster (asia-southeast1)
+# Keep only imports for remote clusters
+apiVersion: net.gke.io/v1
+kind: ServiceImport
+metadata:
+  name: asia-southeast1-broadcaster-headless
+$patch: delete 
