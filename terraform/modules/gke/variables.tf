@@ -22,8 +22,8 @@ variable "cluster_names" {
   description = "A map of cluster names, keyed by region."
   type        = map(string)
   default = {
-    "us-west1"        = "broadcaster-us"
-    "europe-west1"    = "broadcaster-eu"
+    "us-east5"        = "broadcaster-us"
+    "europe-west9"    = "broadcaster-eu"
     "asia-southeast1" = "broadcaster-asia"
   }
 } 

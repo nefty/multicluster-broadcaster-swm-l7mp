@@ -28,11 +28,8 @@ resource "google_container_cluster" "primary" {
   name     = var.cluster_names[each.key]
   location = each.value.region
 
-  # We can't create a cluster with no node pool defined, but we want an Autopilot cluster.
-  # So we create it with a temporary node pool, then remove it.
-  # This is a standard workaround for creating Autopilot clusters with Terraform.
-  remove_default_node_pool = true
-  initial_node_count       = 1
+  # When enable_autopilot is true, we do not need to manage node pools.
+  # The conflicting `remove_default_node_pool` and `initial_node_count` are removed.
 
   network    = var.network_name
   subnetwork = each.value.name

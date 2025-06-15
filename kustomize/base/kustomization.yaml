@@ -1,0 +1,16 @@
+# kustomize/base/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# List of resources that make up the base application
+resources:
+  - broadcaster.yaml
+  - stunner-common.yaml
+  - broadcaster-udproute.yaml
+
+# This is a key part of Kustomize. We're telling it about an image
+# that it can find and replace the tag for.
+images:
+  - name: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster
+    newName: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster # The name to be replaced
+    newTag: latest # The tag to be replaced by the commit SHA 

@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: broadcaster-MYREGION
+  # The name will be patched by Kustomize overlays
+  name: broadcaster
 spec:
   #replicas: 3
   serviceName: broadcaster-headless
@@ -15,7 +16,8 @@ spec:
     spec:
       containers:
         - name: broadcaster
-          image: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster:0.0.1
+          # This image will be patched by Kustomize
+          image: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster
           ports:
             - name: http
               containerPort: 4000
@@ -29,49 +31,47 @@ spec:
               value: k8s
             - name: K8S_SERVICE_NAME
               value: broadcaster-headless
+            # These values will be patched by Kustomize overlays
             - name: ICE_SERVER_URL
-              value: turn:MYREGION.broadcaster.stunner.cc:3478?transport=udp
-            - name: ICE_SERVER_USERNAME
-              value: user-1
-            - name: ICE_SERVER_CREDENTIAL
-              value: pass-1
-            - name: ICE_TRANSPORT_POLICY
-              value: relay
-            - name: ICE_PORT_RANGE
-              value: 51000-52000
-            - name: SECRET_KEY_BASE
-              value: u1gYGbDNgA5RwdKGFe9CdK+5qLCVROAHZAFPgUVlcmjTEGdvpXqgYW9qFjLQvxZO
+              value: "turn:turn.example.com:3478?transport=udp"
             - name: PHX_HOST
-              value: MYREGION.broadcaster.stunner.cc
+              value: "app.example.com"
+            # --- Static config below ---
+            - name: ICE_SERVER_USERNAME
+              value: "user-1"
+            - name: ICE_SERVER_CREDENTIAL
+              value: "pass-1"
+            - name: ICE_TRANSPORT_POLICY
+              value: "relay"
+            - name: SECRET_KEY_BASE
+              value: "u1gYGbDNgA5RwdKGFe9CdK+5qLCVROAHZAFPgUVlcmjTEGdvpXqgYW9qFjLQvxZO"
             - name: ADMIN_USERNAME
-              value: admin
+              value: "admin"
             - name: ADMIN_PASSWORD
-              value: admin
+              value: "admin"
             - name: WHIP_TOKEN
-              value: token
-            - name: C0
-              value: "GLOBAL;https://global.broadcaster.stunner.cc/"
-            - name: C1
-              value: "US-WEST;https://us-west.broadcaster.stunner.cc/;45.522896;-122.989830"
-            - name: C2
-              value: "GERMANY;https://germany.broadcaster.stunner.cc/;52.520008;13.404954"
-            - name: C3
-              value: "SINGAPORE;https://singapore.broadcaster.stunner.cc/;1.290270;103.851959"
+              value: "token"
             - name: CHECK_ORIGIN
               value: "false"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.cilium.io/global: "true"
-    service.cilium.io/global-sync-endpoint-slices: "true"
   name: broadcaster-headless
 spec:
   selector:
     app: broadcaster
   type: ClusterIP
   clusterIP: None
+---
+# This manifest exports the broadcaster-headless service to other clusters in the GKE Fleet.
+# This replaces the Cilium service annotations.
+apiVersion: net.gke.io/v1
+kind: ServiceExport
+metadata:
+  name: broadcaster-headless
+spec:
+  # No spec fields are required. The presence of the object is enough.
 ---
 apiVersion: v1
 kind: Service

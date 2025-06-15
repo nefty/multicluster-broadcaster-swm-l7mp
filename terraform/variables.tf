@@ -12,14 +12,14 @@ variable "subnets" {
     services_range = string
   }))
   default = {
-    "us-west1" = {
-      region         = "us-west1"
+    "us-east5" = {
+      region         = "us-east5"
       ip_cidr_range  = "10.10.1.0/24"
       pods_range     = "10.20.0.0/16"
       services_range = "10.30.0.0/16"
     },
-    "europe-west1" = {
-      region         = "europe-west1"
+    "europe-west9" = {
+      region         = "europe-west9"
       ip_cidr_range  = "10.10.2.0/24"
       pods_range     = "10.40.0.0/16"
       services_range = "10.50.0.0/16"

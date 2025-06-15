@@ -1,0 +1,15 @@
+# kustomize/overlays/asia-southeast1/patch.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: broadcaster
+spec:
+  template:
+    spec:
+      containers:
+        - name: broadcaster
+          env:
+            - name: PHX_HOST
+              value: "asia-southeast1.broadcaster.gcp.example.com"
+            - name: ICE_SERVER_URL
+              value: "turn:asia-southeast1.turn.gcp.example.com:3478?transport=udp" 

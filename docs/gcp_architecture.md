@@ -18,9 +18,9 @@ flowchart TD
     subgraph "Google Cloud Platform"
         GCLB["Global External HTTPS Load Balancer<br/>(Provisioned by GKE Gateway)"]
         
-        subgraph "GCP Region: us-west1"
+        subgraph "GCP Region: us-east5"
             NLB_US["Regional Network Load Balancer (UDP)"]
-            subgraph "GKE Cluster: us-west1"
+            subgraph "GKE Cluster: us-east5"
                 GKE_US["GKE Control Plane (Managed)"]
                 Nodes_US["Node Pool"]
                 MCS_US["Multi-Cluster Services (East-West)"]
@@ -29,9 +29,9 @@ flowchart TD
             end
         end
 
-        subgraph "GCP Region: europe-west1"
+        subgraph "GCP Region: europe-west9"
             NLB_DE["Regional Network Load Balancer (UDP)"]
-            subgraph "GKE Cluster: europe-west1"
+            subgraph "GKE Cluster: europe-west9"
                 GKE_DE["GKE Control Plane (Managed)"]
                 Nodes_DE["Node Pool"]
                 MCS_DE["Multi-Cluster Services (East-West)"]

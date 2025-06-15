@@ -1,0 +1,67 @@
+# cloudbuild.yaml
+steps:
+  # 1. Build the Docker image from the k8s_broadcaster directory
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Build
+    args:
+      - 'build'
+      - '-t'
+      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}'
+      - './k8s_broadcaster'
+
+  # 2. Push the tagged image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Push
+    args:
+      - 'push'
+      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}'
+
+  # 3. Deploy to GKE clusters using Kustomize
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: Deploy
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e # Exit script on first error
+        echo "---- DEPLOYING TO ALL CLUSTERS ----"
+
+        # The GKE clusters to deploy to, taken from substitution variables
+        CLUSTERS=(
+          "${_GKE_US_LOCATION}|${_GKE_US_CLUSTER}"
+          "${_GKE_EU_LOCATION}|${_GKE_EU_CLUSTER}"
+          "${_GKE_ASIA_LOCATION}|${_GKE_ASIA_CLUSTER}"
+        )
+
+        for cluster_info in "${CLUSTERS[@]}"; do
+          IFS="|" read -r location cluster <<< "$cluster_info"
+          echo "--- Deploying to ${cluster} in ${location} ---"
+          
+          # Get GKE cluster credentials
+          gcloud container clusters get-credentials "${cluster}" --region "${location}" --project "${PROJECT_ID}"
+          
+          # Use Kustomize to build the manifests for the specific overlay
+          # and pipe directly to kubectl.
+          # The image will be replaced with the one we just built.
+          kustomize build kustomize/overlays/"${location}" | kubectl apply -f -
+
+          echo "--- Finished deployment to ${cluster} ---"
+          echo
+        done
+
+substitutions:
+  # The location of your Artifact Registry repository
+  _AR_HOSTNAME: us-east5-docker.pkg.dev
+  # The name of your Artifact Registry repository
+  _REPO_NAME: broadcaster-repo
+  # Cluster configurations
+  _GKE_US_CLUSTER: broadcaster-us
+  _GKE_US_LOCATION: us-east5
+  _GKE_EU_CLUSTER: broadcaster-eu
+  _GKE_EU_LOCATION: europe-west9
+  _GKE_ASIA_CLUSTER: broadcaster-asia
+  _GKE_ASIA_LOCATION: asia-southeast1
+
+# Store the pushed image name for other steps to use
+images:
+  - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}' 
