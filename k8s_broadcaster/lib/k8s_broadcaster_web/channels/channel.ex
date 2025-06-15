@@ -3,6 +3,8 @@ defmodule K8sBroadcasterWeb.Channel do
 
   use K8sBroadcasterWeb, :channel
 
+  require Logger
+
   alias K8sBroadcasterWeb.{Endpoint, Presence}
 
   @spec input_added(K8sBroadcaster.Forwarder.input_spec()) :: :ok

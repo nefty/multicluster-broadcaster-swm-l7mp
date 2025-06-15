@@ -49,3 +49,6 @@ terraform.tfvars.json
 
 # Ignore cloudflare secret file
 manifests/cloudflare-secret.yaml
+
+# mise-en-place
+mise.toml

@@ -8,8 +8,7 @@ defmodule K8sBroadcaster.MultiClusterDNSStrategy do
   """
 
   use Cluster.Strategy
-
-  import Cluster.Logger
+  use GenServer
 
   alias Cluster.Strategy.State
 
@@ -51,9 +50,9 @@ defmodule K8sBroadcaster.MultiClusterDNSStrategy do
     |> MapSet.difference(MapSet.new([node()]))
     |> case do
       nodes when map_size(nodes) == 0 ->
-        warn(topology, "No nodes found")
+        Cluster.Logger.warn(topology, "No nodes found")
       nodes ->
-        debug(topology, "Found nodes: #{inspect(MapSet.to_list(nodes))}")
+        Cluster.Logger.debug(topology, "Found nodes: #{inspect(MapSet.to_list(nodes))}")
     end
 
     Cluster.Strategy.connect_nodes(topology, connect, list_nodes, MapSet.to_list(added))
@@ -66,7 +65,7 @@ defmodule K8sBroadcaster.MultiClusterDNSStrategy do
     services = config[:services] || []
 
     if Enum.empty?(services) do
-      warn("No services configured for multi-cluster discovery")
+      Cluster.Logger.warn(nil, "No services configured for multi-cluster discovery")
       []
     else
       services
@@ -80,10 +79,10 @@ defmodule K8sBroadcaster.MultiClusterDNSStrategy do
     end)
   end
 
-    defp get_nodes_for_service(service, app_name) do
+  defp get_nodes_for_service(service, app_name) do
     case :inet_res.lookup(String.to_charlist(service), :in, :a) do
       {:error, reason} ->
-        warn("Failed to lookup A records for #{service}: #{inspect(reason)}")
+        Cluster.Logger.warn(nil, "Failed to lookup A records for #{service}: #{inspect(reason)}")
         []
 
       ip_addresses ->
@@ -99,15 +98,11 @@ defmodule K8sBroadcaster.MultiClusterDNSStrategy do
     end
   rescue
     error ->
-      warn("Error getting nodes for service #{service}: #{inspect(error)}")
+      Cluster.Logger.warn(nil, "Error getting nodes for service #{service}: #{inspect(error)}")
       []
   end
 
   defp polling_interval(%State{config: config}) do
     Keyword.get(config, :polling_interval, @default_polling_interval)
   end
-
-  defp warn(message), do: warn(nil, message)
-  defp warn(topology, message), do: Cluster.Logger.warn(topology, message)
-  defp debug(topology, message), do: Cluster.Logger.debug(topology, message)
 end
