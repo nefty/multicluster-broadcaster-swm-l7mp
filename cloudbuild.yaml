@@ -64,4 +64,11 @@ substitutions:
 
 # Store the pushed image name for other steps to use
 images:
-  - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}' 
+  - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}'
+
+# Add build options
+options:
+  # This option tells Cloud Build to send logs directly to Cloud Logging
+  # and not to use a Cloud Storage bucket. This is required when using a
+  # custom service account.
+  logging: CLOUD_LOGGING_ONLY 
