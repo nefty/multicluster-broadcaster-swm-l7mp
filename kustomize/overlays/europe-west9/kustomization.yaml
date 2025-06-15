@@ -1,7 +1,14 @@
 # kustomize/overlays/europe-west9/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+# Inherit from the base configuration
+
+# Add a prefix to all resource names to ensure they are unique per cluster
+# e.g., the 'broadcaster' StatefulSet becomes 'europe-west9-broadcaster'
 namePrefix: europe-west9-
+
+# Apply patches to the base configuration
 resources:
 - ../../base
 # Import ServiceImports for remote clusters only (not own cluster)

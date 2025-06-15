@@ -31,6 +31,9 @@ spec:
               value: k8s
             - name: K8S_SERVICE_NAME
               value: broadcaster-headless
+            # Erlang Distribution cookie for cross-cluster authentication
+            - name: ERLANG_COOKIE
+              value: "multicluster-broadcaster-cookie-gcp-2025"
             # These values will be patched by Kustomize overlays
             - name: ICE_SERVER_URL
               value: "turn:turn.example.com:3478?transport=udp"
@@ -43,6 +46,8 @@ spec:
               value: "pass-1"
             - name: ICE_TRANSPORT_POLICY
               value: "relay"
+            - name: ICE_PORT_RANGE
+              value: "51000-52000"
             - name: SECRET_KEY_BASE
               value: "u1gYGbDNgA5RwdKGFe9CdK+5qLCVROAHZAFPgUVlcmjTEGdvpXqgYW9qFjLQvxZO"
             - name: ADMIN_USERNAME
@@ -53,6 +58,15 @@ spec:
               value: "token"
             - name: CHECK_ORIGIN
               value: "false"
+            # Cluster info for UI buttons (consistent across all regions)
+            - name: C0
+              value: "GLOBAL;global.broadcaster.gcp.example.com;0;0"
+            - name: C1
+              value: "us-east5;us-east5.broadcaster.gcp.example.com;40.7128;-74.0060"
+            - name: C2
+              value: "europe-west9;europe-west9.broadcaster.gcp.example.com;50.1109;8.6821"
+            - name: C3
+              value: "asia-southeast1;asia-southeast1.broadcaster.gcp.example.com;1.3521;103.8198"
 ---
 apiVersion: v1
 kind: Service

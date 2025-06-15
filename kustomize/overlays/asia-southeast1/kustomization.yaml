@@ -1,7 +1,14 @@
 # kustomize/overlays/asia-southeast1/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+# Inherit from the base configuration
+
+# Add a prefix to all resource names to ensure they are unique per cluster
+# e.g., the 'broadcaster' StatefulSet becomes 'asia-southeast1-broadcaster'
 namePrefix: asia-southeast1-
+
+# Apply patches to the base configuration
 resources:
 - ../../base
 # Import ServiceImports for remote clusters only (not own cluster)

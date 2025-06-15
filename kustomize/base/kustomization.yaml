@@ -7,3 +7,9 @@ resources:
 - broadcaster.yaml
 - stunner-common.yaml
 - broadcaster-udproute.yaml
+
+# Image transformations (will be updated by Cloud Build)
+images:
+- name: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster
+  newName: us-central1-docker.pkg.dev/PROJECT_ID/broadcaster-repo-central1/broadcaster
+  newTag: COMMIT_SHA

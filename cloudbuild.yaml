@@ -34,21 +34,10 @@ steps:
         helm repo add stunner https://l7mp.io/stunner
         helm repo update
 
-        echo "--- Dynamically generating kustomization file with new image ---"
-        # Since 'kustomize' command is not available, we manually create the kustomization
-        # file with the new image information. This achieves the same as 'kustomize edit set image'.
-        cat <<EOF > kustomize/base/kustomization.yaml
-        apiVersion: kustomize.config.k8s.io/v1beta1
-        kind: Kustomization
-        resources:
-          - broadcaster.yaml
-          - stunner-common.yaml
-          - broadcaster-udproute.yaml
-        images:
-        - name: ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster
-          newName: ${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}
-          newTag: ${COMMIT_SHA}
-        EOF
+        echo "--- Updating base kustomization with new image ---"
+        # Replace placeholders in the base kustomization file
+        sed -i "s|PROJECT_ID|${PROJECT_ID}|g" kustomize/base/kustomization.yaml
+        sed -i "s|COMMIT_SHA|${COMMIT_SHA}|g" kustomize/base/kustomization.yaml
 
         echo "---- DEPLOYING TO ALL CLUSTERS ----"
 
