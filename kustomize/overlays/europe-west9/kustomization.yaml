@@ -1,8 +1,8 @@
 # kustomize/overlays/europe-west9/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-bases:
-  - ../../base
 namePrefix: europe-west9-
-patchesStrategicMerge:
-  - patch.yaml 
+resources:
+- ../../base
+patches:
+- path: patch.yaml

@@ -24,6 +24,10 @@ steps:
       - -c
       - |
         set -e # Exit script on first error
+        
+        # Add the stunner helm repo
+        helm repo add stunner https://l7mp.io/stunner
+        helm repo update
 
         echo "--- Dynamically generating kustomization file with new image ---"
         # Since 'kustomize' command is not available, we manually create the kustomization
@@ -57,6 +61,9 @@ steps:
           # Get GKE cluster credentials
           gcloud container clusters get-credentials "${cluster}" --region "${location}" --project "${PROJECT_ID}"
           
+          # Install/upgrade stunner operator
+          helm upgrade --install stunner-gateway-operator stunner/stunner-gateway-operator --create-namespace --namespace stunner
+
           # Use 'kubectl apply -k' which leverages the kustomize functionality built into kubectl
           kubectl apply -k kustomize/overlays/"${location}"
 

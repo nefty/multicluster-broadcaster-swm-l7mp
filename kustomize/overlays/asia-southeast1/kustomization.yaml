@@ -1,8 +1,8 @@
 # kustomize/overlays/asia-southeast1/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-bases:
-  - ../../base
 namePrefix: asia-southeast1-
-patchesStrategicMerge:
-  - patch.yaml 
+resources:
+- ../../base
+patches:
+- path: patch.yaml
