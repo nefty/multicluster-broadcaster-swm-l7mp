@@ -6,7 +6,7 @@ steps:
     args:
       - 'build'
       - '-t'
-      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}'
+      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:${COMMIT_SHA}'
       - './k8s_broadcaster'
 
   # 2. Push the tagged image to Google Artifact Registry
@@ -14,7 +14,7 @@ steps:
     id: Push
     args:
       - 'push'
-      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}'
+      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:${COMMIT_SHA}'
 
   # 3. Deploy to GKE clusters using Kustomize
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -24,6 +24,12 @@ steps:
       - -c
       - |
         set -e # Exit script on first error
+
+        echo "--- Setting Kustomize image for build ${COMMIT_SHA} ---"
+        # Use kustomize to set the new image in the base configuration.
+        # This will update the kustomization.yaml file with the image we just built and pushed.
+        (cd kustomize/base && kustomize edit set image ghcr.io/l7mp/multicluster-broadcaster-swm-l7mp/k8s_broadcaster=${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:${COMMIT_SHA})
+
         echo "---- DEPLOYING TO ALL CLUSTERS ----"
 
         # The GKE clusters to deploy to, taken from substitution variables
@@ -41,8 +47,7 @@ steps:
           gcloud container clusters get-credentials "${cluster}" --region "${location}" --project "${PROJECT_ID}"
           
           # Use Kustomize to build the manifests for the specific overlay
-          # and pipe directly to kubectl.
-          # The image will be replaced with the one we just built.
+          # and pipe directly to kubectl. Kustomize will now use the correct image.
           kustomize build kustomize/overlays/"${location}" | kubectl apply -f -
 
           echo "--- Finished deployment to ${cluster} ---"
@@ -54,6 +59,8 @@ substitutions:
   _AR_HOSTNAME: us-central1-docker.pkg.dev
   # The name of your Artifact Registry repository - UPDATED
   _REPO_NAME: broadcaster-repo-central1
+  # The name for our docker image
+  _IMAGE_NAME: broadcaster
   # Cluster configurations - updated to match your regions
   _GKE_US_CLUSTER: broadcaster-us
   _GKE_US_LOCATION: us-east5
@@ -64,7 +71,7 @@ substitutions:
 
 # Store the pushed image name for other steps to use
 images:
-  - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}:${COMMIT_SHA}'
+  - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:${COMMIT_SHA}'
 
 # Add build options
 options:
