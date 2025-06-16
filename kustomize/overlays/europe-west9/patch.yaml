@@ -16,4 +16,11 @@ spec:
             - name: CLUSTER_REGION
               value: "europe-west9"
             - name: K8S_SERVICE_NAME
-              value: "europe-west9-broadcaster-headless" 
+              value: "europe-west9-broadcaster-headless"
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: europe-west9-broadcaster-secrets 

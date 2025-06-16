@@ -15,4 +15,11 @@ spec:
             - name: CLUSTER_REGION
               value: "us-east5"
             - name: K8S_SERVICE_NAME
-              value: "us-east5-broadcaster-headless" 
+              value: "us-east5-broadcaster-headless"
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: us-east5-broadcaster-secrets 

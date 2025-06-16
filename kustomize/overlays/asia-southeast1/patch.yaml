@@ -16,4 +16,11 @@ spec:
             - name: CLUSTER_REGION
               value: "asia-southeast1"
             - name: K8S_SERVICE_NAME
-              value: "asia-southeast1-broadcaster-headless" 
+              value: "asia-southeast1-broadcaster-headless"
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: asia-southeast1-broadcaster-secrets 
