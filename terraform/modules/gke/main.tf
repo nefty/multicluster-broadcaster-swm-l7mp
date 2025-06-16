@@ -42,6 +42,11 @@ resource "google_container_cluster" "primary" {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 
+  # Enable Secret Manager CSI driver addon
+  secret_manager_config {
+    enabled = true
+  }
+
   # Fleet registration depends on the cluster being created
   depends_on = [
     google_project_service.gke_apis

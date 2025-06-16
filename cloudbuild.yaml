@@ -60,14 +60,6 @@ steps:
           # Install/upgrade stunner operator
           helm upgrade --install stunner-gateway-operator stunner/stunner-gateway-operator --create-namespace --namespace stunner
 
-          # Install Secret Store CSI Driver
-          echo "Installing Secret Store CSI Driver..."
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/secrets-store-csi-driver/v1.4.0/deploy/secrets-store-csi-driver.yaml
-
-          # Install GCP Secret Manager provider
-          echo "Installing GCP Secret Manager provider..."
-          kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/secrets-store-csi-driver-provider-gcp/v1.4.2/deploy/provider-gcp-plugin.yaml
-
           # Use 'kubectl apply -k' which leverages the kustomize functionality built into kubectl
           kubectl apply -k kustomize/overlays/"${location}"
 

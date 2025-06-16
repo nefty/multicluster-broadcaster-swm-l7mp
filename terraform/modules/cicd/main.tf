@@ -41,11 +41,4 @@ resource "google_project_iam_member" "cicd_logging_log_writer" {
   project = var.project_id
   role    = "roles/logging.logWriter"
   member  = "serviceAccount:${google_service_account.broadcaster_cicd.email}"
-}
-
-# Additional role needed for installing system components like CSI drivers
-resource "google_project_iam_member" "cicd_container_cluster_admin" {
-  project = var.project_id
-  role    = "roles/container.clusterAdmin"
-  member  = "serviceAccount:${google_service_account.broadcaster_cicd.email}"
 } 
