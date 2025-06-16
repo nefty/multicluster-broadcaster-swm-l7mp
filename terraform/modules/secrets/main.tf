@@ -35,6 +35,16 @@ resource "random_password" "whip_token" {
   special = false
 }
 
+resource "random_password" "ice_server_username" {
+  length  = 12
+  special = false
+}
+
+resource "random_password" "ice_server_credential" {
+  length  = 24
+  special = true
+}
+
 # Secret Manager secrets
 resource "google_secret_manager_secret" "broadcaster_secrets" {
   for_each = var.secrets
@@ -96,8 +106,8 @@ locals {
     "broadcaster-secret-key-base"       = random_password.secret_key_base.result
     "broadcaster-admin-password"        = random_password.admin_password.result
     "broadcaster-whip-token"            = random_password.whip_token.result
-    "broadcaster-ice-server-username"   = "user-1"
-    "broadcaster-ice-server-credential" = "pass-1"
+    "broadcaster-ice-server-username"   = random_password.ice_server_username.result
+    "broadcaster-ice-server-credential" = random_password.ice_server_credential.result
     "broadcaster-admin-username"        = "admin"
   }
 } 
