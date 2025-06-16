@@ -89,7 +89,7 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
 
   service_account_id = google_service_account.broadcaster_secrets_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.kubernetes_namespace}/${var.kubernetes_service_account}]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.kubernetes_namespace}/${each.key}-${var.kubernetes_service_account}]"
 }
 
 # Enable required APIs

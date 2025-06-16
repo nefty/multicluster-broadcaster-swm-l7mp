@@ -63,7 +63,7 @@ gcloud container clusters get-credentials broadcaster-us --region=us-east5
 gcloud container clusters get-credentials broadcaster-eu --region=europe-west9
 
 # Asia Southeast 1
-gcloud container clusters get-credentials broadcaster-asia
+gcloud container clusters get-credentials broadcaster-asia --region=asia-southeast1
 ```
 
 ### Monitor Application Status
