@@ -11,8 +11,8 @@ flowchart TD
     end
 
     subgraph "Google Cloud DNS"
-        DNS_Global["global.broadcaster.gcp.example.com"]
-        DNS_TURN["turn.broadcaster.gcp.example.com<br/>(Geolocation Policy)"]
+        DNS_Global["broadcaster.brianeft.com"]
+        DNS_TURN["turn.broadcaster.brianeft.com<br/>(Geolocation Policy)"]
     end
 
     subgraph "Google Cloud Platform"
@@ -73,11 +73,6 @@ flowchart TD
     Broadcaster_US <--> |"GKE Multi-Cluster Services<br/>(Erlang Distribution via Google Private Network)"| Broadcaster_DE
     Broadcaster_DE <--> |"GKE Multi-Cluster Services<br/>(Erlang Distribution via Google Private Network)"| Broadcaster_SG
     Broadcaster_SG <--> |"GKE Multi-Cluster Services<br/>(Erlang Distribution via Google Private Network)"| Broadcaster_US
-
-    style GCLB fill:#b3e6b3
-    style NLB_US fill:#fce6c5
-    style NLB_DE fill:#fce6c5
-    style NLB_SG fill:#fce6c5
 ```
 
 ## Architectural Decisions
@@ -86,7 +81,7 @@ Here we summarize the key technology choices for the GCP migration.
 
 * **Compute: Google Kubernetes Engine (GKE)**
   * **Replaces:** Self-managed `k3s` on VMs.
-  * **Rationale:** GKE is a managed Kubernetes service that handles the operational overhead of managing the control plane, scaling, and security. We can choose between **GKE Autopilot** for a hands-off, serverless-like experience, or **GKE Standard** for more fine-grained control over node configuration.
+  * **Rationale:** GKE is a managed Kubernetes service that handles the operational overhead of managing the control plane, scaling, and security. We choose **GKE Autopilot** for a hands-off, serverless-like experience.
 
 * **Multi-Cluster Management: GKE Fleet**
   * **Replaces:** Manual cluster configuration.
@@ -102,7 +97,7 @@ Here we summarize the key technology choices for the GCP migration.
 
 * **North-South Traffic (Media): Network Load Balancer & Cloud DNS**
   * **Replaces:** Exposing STUNner directly on the VM IP.
-  * **Rationale:** The WebRTC media path relies on STUN/TURN over UDP. A Global HTTPS Load Balancer is not suitable for this. The standard and most performant pattern is to expose the STUNner pods in each cluster using a Kubernetes `Service` of type `LoadBalancer`. This provisions a regional, high-performance L4 Network Load Balancer. We will then use **Cloud DNS** with a **geolocation routing policy** to direct users to the TURN server in the nearest region.
+  * **Rationale:** The WebRTC media path relies on STUN/TURN over UDP. A Global HTTPS Load Balancer is not suitable for this. The standard and most performant pattern is to expose the STUNner pods in each cluster using a Kubernetes `Service` of type `LoadBalancer`. This provisions a regional, high-performance L4 Network Load Balancer. We use **Cloud DNS** with a **geolocation routing policy** to direct users to the TURN server in the nearest region.
 
 * **Container Registry: Artifact Registry**
   * **Replaces:** Building Docker images locally or using a different registry like GHCR.
