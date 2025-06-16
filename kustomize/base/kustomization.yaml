@@ -7,6 +7,8 @@ resources:
 - broadcaster.yaml
 - stunner-common.yaml
 - broadcaster-udproute.yaml
+- serviceaccount.yaml
+- secretproviderclass.yaml
 
 # Image transformations (will be updated by Cloud Build)
 images:

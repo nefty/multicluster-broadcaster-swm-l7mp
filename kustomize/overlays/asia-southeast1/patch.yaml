@@ -12,7 +12,7 @@ spec:
             - name: PHX_HOST
               value: "asia-southeast1.broadcaster.gcp.example.com"
             - name: ICE_SERVER_URL
-              value: "turn:asia-southeast1.turn.gcp.example.com:3478?transport=udp"
+              value: "turn:asia-southeast1.turn.gcp.example.com:3478?transport=udp" 
             - name: CLUSTER_REGION
               value: "asia-southeast1"
             - name: K8S_SERVICE_NAME

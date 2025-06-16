@@ -55,3 +55,6 @@ mise.toml
 
 # ElixirLS
 k8s_broadcaster/.elixir_ls/
+
+# Terraform variables
+terraform/terraform.tfvars

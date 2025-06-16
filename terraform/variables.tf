@@ -3,6 +3,11 @@ variable "project_id" {
   type        = string
 }
 
+variable "domain" {
+  description = "The root domain name (e.g., example.com)"
+  type        = string
+}
+
 variable "subnets" {
   description = "Configuration for the VPC subnets."
   type = map(object({

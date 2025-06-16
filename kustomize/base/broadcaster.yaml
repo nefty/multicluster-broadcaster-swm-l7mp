@@ -14,6 +14,7 @@ spec:
       labels:
         app: broadcaster
     spec:
+      serviceAccountName: broadcaster-sa
       containers:
         - name: broadcaster
           # This image will be patched by Kustomize
@@ -22,6 +23,10 @@ spec:
             - name: http
               containerPort: 4000
               protocol: TCP
+          volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets"
+              readOnly: true
           env:
             - name: POD_IP
               valueFrom:
@@ -33,40 +38,68 @@ spec:
               value: broadcaster-headless
             # Erlang Distribution cookie for cross-cluster authentication
             - name: ERLANG_COOKIE
-              value: "multicluster-broadcaster-cookie-gcp-2025"
+              valueFrom:
+                secretKeyRef:
+                  name: broadcaster-secrets
+                  key: erlang-cookie
             # These values will be patched by Kustomize overlays
             - name: ICE_SERVER_URL
               value: "turn:turn.example.com:3478?transport=udp"
             - name: PHX_HOST
-              value: "app.example.com"
+              value: "broadcaster.brianeft.com"
             # --- Static config below ---
             - name: ICE_SERVER_USERNAME
-              value: "user-1"
+              valueFrom:
+                secretKeyRef:
+                  name: broadcaster-secrets
+                  key: ice-server-username
             - name: ICE_SERVER_CREDENTIAL
-              value: "pass-1"
+              valueFrom:
+                secretKeyRef:
+                  name: broadcaster-secrets
+                  key: ice-server-credential
             - name: ICE_TRANSPORT_POLICY
               value: "relay"
             - name: ICE_PORT_RANGE
               value: "51000-52000"
             - name: SECRET_KEY_BASE
-              value: "u1gYGbDNgA5RwdKGFe9CdK+5qLCVROAHZAFPgUVlcmjTEGdvpXqgYW9qFjLQvxZO"
+              valueFrom:
+                secretKeyRef:
+                  name: broadcaster-secrets
+                  key: secret-key-base
             - name: ADMIN_USERNAME
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: broadcaster-secrets
+                  key: admin-username
             - name: ADMIN_PASSWORD
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: broadcaster-secrets
+                  key: admin-password
             - name: WHIP_TOKEN
-              value: "token"
+              valueFrom:
+                secretKeyRef:
+                  name: broadcaster-secrets
+                  key: whip-token
             - name: CHECK_ORIGIN
               value: "false"
             # Cluster info for UI buttons (consistent across all regions)
             - name: C0
-              value: "GLOBAL;global.broadcaster.gcp.example.com;0;0"
+              value: "GLOBAL;broadcaster.brianeft.com;0;0"
             - name: C1
-              value: "us-east5;us-east5.broadcaster.gcp.example.com;40.7128;-74.0060"
+              value: "us-east5;broadcaster.brianeft.com;40.7128;-74.0060"
             - name: C2
-              value: "europe-west9;europe-west9.broadcaster.gcp.example.com;50.1109;8.6821"
+              value: "europe-west9;broadcaster.brianeft.com;50.1109;8.6821"
             - name: C3
-              value: "asia-southeast1;asia-southeast1.broadcaster.gcp.example.com;1.3521;103.8198"
+              value: "asia-southeast1;broadcaster.brianeft.com;1.3521;103.8198"
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: broadcaster-secrets
 ---
 apiVersion: v1
 kind: Service

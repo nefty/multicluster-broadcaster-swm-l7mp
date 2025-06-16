@@ -1,0 +1,8 @@
+# Copy this file to terraform.tfvars and fill in your values
+
+# Your GCP project ID
+project_id = "your-project-id-here"
+
+# Your domain name (without subdomain)
+# The broadcaster application will be accessible at broadcaster.yourdomain.com
+domain = "example.com" 
