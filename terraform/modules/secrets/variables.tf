@@ -35,6 +35,17 @@ variable "cluster_regions" {
   type        = set(string)
 }
 
+variable "github_pat" {
+  description = "GitHub personal access token for Cloud Build integration"
+  type        = string
+  sensitive   = true
+}
+
+variable "project_number" {
+  description = "Google Cloud project number for IAM bindings"
+  type        = string
+}
+
 variable "secrets" {
   description = "Map of secrets to create in Secret Manager"
   type = map(object({

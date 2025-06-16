@@ -28,4 +28,15 @@ output "generated_secrets" {
   description = "Generated secret values (sensitive)"
   value       = local.generated_secrets
   sensitive   = true
+}
+
+# GitHub PAT secret outputs for CI/CD module
+output "github_pat_secret_version_id" {
+  description = "Full resource ID of the GitHub PAT secret version"
+  value       = google_secret_manager_secret_version.github_pat_version.id
+}
+
+output "github_pat_secret_name" {
+  description = "Name of the GitHub PAT secret"
+  value       = google_secret_manager_secret.github_pat.secret_id
 } 

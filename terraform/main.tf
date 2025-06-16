@@ -81,8 +81,10 @@ module "secrets" {
   source = "./modules/secrets"
   
   project_id       = var.project_id
+  project_number   = var.project_number
   environment      = "production"
   cluster_regions  = toset(keys(var.subnets))
+  github_pat       = var.github_pat
   
   depends_on = [module.gke]
 }
@@ -91,5 +93,11 @@ module "secrets" {
 module "cicd" {
   source = "./modules/cicd"
   
-  project_id = var.project_id
+  project_id                    = var.project_id
+  github_app_installation_id   = var.github_app_installation_id
+  github_repo_owner             = var.github_repo_owner
+  github_repo_name              = var.github_repo_name
+  github_pat_secret_version_id  = module.secrets.github_pat_secret_version_id
+  
+  depends_on = [module.secrets]
 }

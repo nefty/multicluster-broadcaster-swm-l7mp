@@ -99,6 +99,40 @@ resource "google_project_service" "secretmanager" {
   disable_dependent_services = true
 }
 
+# GitHub Personal Access Token secret for Cloud Build integration
+resource "google_secret_manager_secret" "github_pat" {
+  secret_id = "github-pat"
+  
+  replication {
+    auto {}
+  }
+
+  labels = {
+    app         = "broadcaster"
+    environment = var.environment
+    purpose     = "cicd"
+  }
+}
+
+resource "google_secret_manager_secret_version" "github_pat_version" {
+  secret        = google_secret_manager_secret.github_pat.id
+  secret_data_wo = var.github_pat
+}
+
+# Grant Cloud Build Service Agent access to the GitHub PAT secret
+data "google_iam_policy" "cloudbuild_secretAccessor" {
+  binding {
+    role = "roles/secretmanager.secretAccessor"
+    members = ["serviceAccount:service-${var.project_number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"]
+  }
+}
+
+resource "google_secret_manager_secret_iam_policy" "github_pat_policy" {
+  project     = var.project_id
+  secret_id   = google_secret_manager_secret.github_pat.secret_id
+  policy_data = data.google_iam_policy.cloudbuild_secretAccessor.policy_data
+}
+
 # Local values for generated secrets
 locals {
   generated_secrets = {

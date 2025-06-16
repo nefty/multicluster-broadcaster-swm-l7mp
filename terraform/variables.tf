@@ -3,6 +3,11 @@ variable "project_id" {
   type        = string
 }
 
+variable "project_number" {
+  description = "The GCP project number (numeric ID) for IAM bindings."
+  type        = string
+}
+
 variable "domain" {
   description = "The root domain name (e.g., example.com)"
   type        = string
@@ -36,4 +41,25 @@ variable "subnets" {
       services_range = "10.70.0.0/16"
     }
   }
+}
+
+variable "github_app_installation_id" {
+  description = "GitHub App installation ID for Cloud Build"
+  type        = string
+}
+
+variable "github_repo_owner" {
+  description = "GitHub repository owner/organization"
+  type        = string
+}
+
+variable "github_repo_name" {
+  description = "GitHub repository name"
+  type        = string
+}
+
+variable "github_pat" {
+  description = "GitHub personal access token for Cloud Build integration"
+  type        = string
+  sensitive   = true
 }
