@@ -17,7 +17,7 @@ This guide walks through the prerequisites needed before deploying the multiclus
 ### 1. Create GCP Project
 ```bash
 # Create a new project (or use existing)
-gcloud projects create your-project-id --name="Multicluster Broadcaster"
+gcloud projects create your-project-id --name="Your Project Name Here"
 
 # Set as default project
 gcloud config set project your-project-id
@@ -46,9 +46,12 @@ gcloud services enable cloudbuild.googleapis.com
 ## GitHub Setup
 
 ### 1. Fork This Repository
+
 1. Go to the GitHub repository page
 2. Click "Fork" to create your own copy
 3. Clone your forked repository locally
+
+Or, just clone the repo and create a new one if you don't want to fork.
 
 ### 2. Install Cloud Build GitHub App
 1. Go to https://github.com/marketplace/google-cloud-build
@@ -58,6 +61,7 @@ gcloud services enable cloudbuild.googleapis.com
 5. Complete the installation
 
 ### 3. Create GitHub OAuth Token Secret
+
 1. Generate a Personal Access Token:
    - Go to GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (classic)
    - Click "Generate new token (classic)"
@@ -66,6 +70,7 @@ gcloud services enable cloudbuild.googleapis.com
    - Copy the generated token
 
 2. Store in Google Secret Manager:
+
    ```bash
    # Create a secret in Secret Manager
    echo -n "your-github-token-here" | gcloud secrets create github-oauth-token --data-file=-
@@ -74,6 +79,7 @@ gcloud services enable cloudbuild.googleapis.com
    ```
 
 ### 4. Get GitHub App Installation ID
+
 1. Go to https://github.com/settings/installations
 2. Find "Google Cloud Build" app
 3. Click "Configure"
@@ -89,13 +95,16 @@ You'll need a domain name that you control. The application will be accessible a
 ## Terraform Configuration
 
 ### 1. Copy Example Configuration
+
 ```bash
 cd terraform
 cp terraform.tfvars.example terraform.tfvars
 ```
 
 ### 2. Fill in Your Values
+
 Edit `terraform.tfvars` with your specific information:
+
 ```hcl
 # Your GCP project ID
 project_id = "your-project-id-here"

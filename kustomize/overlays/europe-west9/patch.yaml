@@ -12,7 +12,7 @@ spec:
             - name: PHX_HOST
               value: "europe-west9.broadcaster.gcp.example.com"
             - name: ICE_SERVER_URL
-              value: "turn:europe-west9.turn.gcp.example.com:3478?transport=udp" 
+              value: "turn:europe-west9.turn.gcp.example.com:3478?transport=udp"
             - name: CLUSTER_REGION
               value: "europe-west9"
             - name: K8S_SERVICE_NAME
@@ -23,4 +23,33 @@ spec:
             driver: secrets-store-gke.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: europe-west9-broadcaster-secrets 
+              secretProviderClass: europe-west9-broadcaster-secrets
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: broadcaster-secrets
+spec:
+  parameters:
+    secrets: |
+      - resourceName: "projects/multicluster-broadcaster-gcp/secrets/broadcaster-erlang-cookie/versions/latest"
+        path: "erlang-cookie"
+      - resourceName: "projects/multicluster-broadcaster-gcp/secrets/broadcaster-secret-key-base/versions/latest"
+        path: "secret-key-base"
+      - resourceName: "projects/multicluster-broadcaster-gcp/secrets/broadcaster-admin-username/versions/latest"
+        path: "admin-username"
+      - resourceName: "projects/multicluster-broadcaster-gcp/secrets/broadcaster-admin-password/versions/latest"
+        path: "admin-password"
+      - resourceName: "projects/multicluster-broadcaster-gcp/secrets/broadcaster-whip-token/versions/latest"
+        path: "whip-token"
+      - resourceName: "projects/multicluster-broadcaster-gcp/secrets/broadcaster-ice-server-username/versions/latest"
+        path: "ice-server-username"
+      - resourceName: "projects/multicluster-broadcaster-gcp/secrets/broadcaster-ice-server-credential/versions/latest"
+        path: "ice-server-credential"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: broadcaster-sa
+  annotations:
+    iam.gke.io/gcp-service-account: "broadcaster-secrets-sa@multicluster-broadcaster-gcp.iam.gserviceaccount.com" 

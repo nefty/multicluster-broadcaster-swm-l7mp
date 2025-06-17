@@ -34,12 +34,9 @@ steps:
         helm repo add stunner https://l7mp.io/stunner
         helm repo update
 
-        echo "--- Updating kustomization files with project ID and image ---"
-        # Replace placeholders in the base kustomization and secrets files
-        sed -i "s|PROJECT_ID|${PROJECT_ID}|g" kustomize/base/kustomization.yaml
-        sed -i "s|COMMIT_SHA|${COMMIT_SHA}|g" kustomize/base/kustomization.yaml
-        sed -i "s|PROJECT_ID|${PROJECT_ID}|g" kustomize/base/serviceaccount.yaml
-        sed -i "s|PROJECT_ID|${PROJECT_ID}|g" kustomize/base/secretproviderclass.yaml
+        echo "--- Updating image in kustomization files ---"
+        # Find all kustomization.yaml files and set the image tag
+        find kustomize -name kustomization.yaml -exec sed -i "s|:latest|:${COMMIT_SHA}|g" {} +
 
         echo "---- DEPLOYING TO ALL CLUSTERS ----"
 
