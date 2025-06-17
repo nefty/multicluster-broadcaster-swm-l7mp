@@ -7,6 +7,8 @@ steps:
       - 'build'
       - '-t'
       - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:${COMMIT_SHA}'
+      - '-t'
+      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:latest'
       - './k8s_broadcaster'
 
   # 2. Push the tagged image to Google Artifact Registry
@@ -14,7 +16,8 @@ steps:
     id: Push
     args:
       - 'push'
-      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:${COMMIT_SHA}'
+      - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}'
+      - '--all-tags'
 
   # 3. Deploy to GKE clusters using kubectl and Kustomize
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -33,10 +36,6 @@ steps:
         # Add the stunner helm repo
         helm repo add stunner https://l7mp.io/stunner
         helm repo update
-
-        echo "--- Updating image in kustomization files ---"
-        # Find all kustomization.yaml files and set the image tag
-        find kustomize -name kustomization.yaml -exec sed -i "s|:latest|:${COMMIT_SHA}|g" {} +
 
         echo "---- DEPLOYING TO ALL CLUSTERS ----"
 
@@ -82,6 +81,7 @@ substitutions:
 # Store the pushed image name for other steps to use
 images:
   - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:${COMMIT_SHA}'
+  - '${_AR_HOSTNAME}/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}:latest'
 
 # Add build options
 options:
